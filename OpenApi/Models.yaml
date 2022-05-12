@@ -1,0 +1,446 @@
+openapi: 3.0.0
+x-stoplight:
+  id: e7xghkyuq0psb
+info:
+  title: CreditConveyor
+  version: '1.0'
+  contact:
+    name: Nickolay Leonov
+    email: nleonov@neoflex.ru
+    url: 'https://whoami.com'
+  license:
+    name: Some licence
+    url: 'https://www.somelicenceurl.com'
+  description: Api of neoflex training project.
+servers:
+  - url: 'http://localhost:8080'
+paths: {}
+components:
+  schemas:
+    LoanApplicationRequest:
+      title: LoanApplicationRequest
+      x-stoplight:
+        id: 3xqowdfx0gpkr
+      type: object
+      description: Запрос кредитования от пользователя.
+      x-examples:
+        Пример запроса кредитования:
+          amount: 150000
+          term: 30
+          firstName: Василий
+          lastName: Пупкин
+          middleName: Улукбекович
+          email: ulug_pup@vassya.ru
+          birthdate: '2001-08-24'
+          passportSeries: '4666'
+          passportNumber: '456321'
+      properties:
+        amount:
+          type: number
+          description: Сумма займа.
+        term:
+          type: integer
+          description: Срок займа.
+        firstName:
+          type: string
+          description: Имя.
+        lastName:
+          type: string
+          description: Фамилия.
+        middleName:
+          type: string
+          description: Отчество.
+        email:
+          type: string
+          description: Электронная почта.
+        birthdate:
+          type: string
+          format: date
+          description: Дата рождения.
+        passportSeries:
+          type: string
+          description: Серия паспорта.
+        passportNumber:
+          type: string
+          description: Номер паспорта.
+      required:
+        - amount
+        - term
+        - firstName
+        - lastName
+        - email
+        - birthdate
+        - passportSeries
+        - passportNumber
+    LoanOffer:
+      type: object
+      x-examples:
+        Пример предложения по кредиту.:
+          applicationId: 1231231231
+          requestedAmount: 660300.34
+          totalAmount: 1200330.4
+          term: 44536
+          monthlyPayment: 66000.23
+          rate: 6.4
+          isInsuranceEnabled: true
+          isSalaryClient: false
+      description: Предложение по кредитованию.
+      title: LoanOffer
+      properties:
+        applicationId:
+          type: integer
+          format: int64
+          description: Id предложения по кредитованию.
+        requestedAmount:
+          type: number
+          description: Размер займа.
+        totalAmount:
+          type: number
+          description: Сумма кредита.
+        term:
+          type: integer
+          format: int32
+          description: Срок кредита.
+        monthlyPayment:
+          type: number
+          description: Ежемесячный платёж.
+        rate:
+          type: number
+          description: Ставка по кредиту.
+        isInsuranceEnabled:
+          type: boolean
+          description: Включена ли страховка.
+        isSalaryClient:
+          type: boolean
+          description: Является ли заёмщик зарплатным клиентом.
+      required:
+        - applicationId
+        - requestedAmount
+        - totalAmount
+        - term
+        - monthlyPayment
+        - rate
+        - isInsuranceEnabled
+        - isSalaryClient
+    PaymentScheduleElement:
+      type: object
+      x-examples:
+        Пример платежа по кредиту.:
+          number: 1235
+          date: '2001-08-24'
+          totalPayment: 12345.67
+          interestPayment: 10000.66
+          debtPayment: 2345.01
+          remainingDebt: 1234567.88
+      title: PaymentScheduleElement
+      description: Платёж по кредиту.
+      properties:
+        number:
+          type: integer
+          format: int32
+          description: Номер платежа.
+        date:
+          type: string
+          format: date
+          description: Дата платежа.
+        totalPayment:
+          type: number
+          description: Сумма платежа.
+        interestPayment:
+          type: number
+          description: Сумма процентов.
+        debtPayment:
+          type: number
+          description: Сумма по основному долгу.
+        remainingDebt:
+          type: number
+          description: Осталось заплатить
+      required:
+        - number
+        - date
+        - totalPayment
+        - interestPayment
+        - debtPayment
+        - remainingDebt
+    Employment:
+      type: object
+      x-examples:
+        Пример статуса работника:
+          employmentStatus: EMPLOYED
+          employerINN: '49993302030'
+          salary: 44000.33
+          position: WORKER
+          workExperienceTotal: 5343
+          workExperienceCurrent: 10345
+      title: Employment
+      description: Статус работника.
+      properties:
+        employmentStatus:
+          type: string
+          enum:
+            - EMPLOYED
+            - UNEMPLOYED
+            - SELF_EMPLOYED
+            - BUSINESS_OWNER
+          description: Статус трудоустройства.
+        employerINN:
+          type: string
+          description: ИНН работника.
+        salary:
+          type: number
+          description: Зарплата.
+        position:
+          type: string
+          enum:
+            - WORKER
+            - MID_MANAGER
+            - TOP_MANAGER
+            - OWNER
+          description: Должность.
+        workExperienceTotal:
+          type: integer
+          format: int32
+          description: Общий трудовой стаж.
+        workExperienceCurrent:
+          type: integer
+          format: int32
+          description: Трудовой стаж на текущем рабочем месте.
+      required:
+        - employmentStatus
+        - employerINN
+        - salary
+        - position
+        - workExperienceTotal
+        - workExperienceCurrent
+    ScoringData:
+      type: object
+      x-examples:
+        Пример данных для скоринга.:
+          amount: 1231123.87
+          term: 83648
+          firstName: Василий
+          lastName: Пупкин
+          middleName: Улукбекович
+          gender: Male
+          birthdate: '2019-08-24'
+          passportSeries: '5838'
+          passportNumber: '330957'
+          passportIssueDate: '2019-08-24'
+          passportIssueBranch: Бобруйский отдел УВД №66
+          maritalStatus: Married
+          dependentAmount: 0
+          employment:
+            employmentStatus: Employed
+            employerINN: string
+            salary: 34566
+            position: Worker
+            workExperienceTotal: 30
+            workExperienceCurrent: 10
+          account: '34534775465654564'
+          isInsuranceEnabled: true
+          isSalaryClient: true
+      title: ScoringData
+      description: Данные для скоринга.
+      properties:
+        amount:
+          type: number
+          description: Сумма кредита.
+        term:
+          type: integer
+          format: int32
+          description: Срок кредита.
+        firstName:
+          type: string
+          description: Имя.
+        lastName:
+          type: string
+          description: Фамилия.
+        middleName:
+          type: string
+          description: Отчество.
+        gender:
+          type: string
+          enum:
+            - MALE
+            - FEMALE
+            - NON_BINARY
+          description: Пол.
+        birthdate:
+          type: string
+          format: date
+          description: Дата рождения.
+        passportSeries:
+          type: string
+          description: Серия паспорта.
+        passportNumber:
+          type: string
+          description: Номер паспорта.
+        passportIssueDate:
+          type: string
+          format: date
+          description: Дата выдачи паспорта.
+        passportIssueBranch:
+          type: string
+          description: Кем выдан паспорт.
+        maritalStatus:
+          type: string
+          enum:
+            - MARRIED
+            - DIVORCED
+            - SINGLE
+            - WIDOW_WIDOWER
+          description: Семейное положение.
+        dependentAmount:
+          type: integer
+        employment:
+          $ref: '#/components/schemas/Employment'
+        account:
+          type: string
+          description: Номер счёта.
+        isInsuranceEnabled:
+          type: boolean
+          description: Есть ли страховка?
+        isSalaryClient:
+          type: boolean
+          description: Является ли зарплатным клиентом?
+      required:
+        - amount
+        - term
+        - firstName
+        - lastName
+        - gender
+        - birthdate
+        - passportSeries
+        - passportNumber
+        - passportIssueDate
+        - passportIssueBranch
+        - maritalStatus
+        - dependentAmount
+        - employment
+        - account
+        - isInsuranceEnabled
+        - isSalaryClient
+    Credit:
+      type: object
+      x-examples:
+        Пример данных о кредите.:
+          amount: 12345.67
+          term: 12345
+          monthlyPayment: 6789.01
+          rate: 6.9
+          psk: 1234.67
+          isInsuranceEnabled: false
+          isSalaryClient: true
+          paymentSchedule:
+            - number: 353
+              date: '2019-08-24'
+              totalPayment: 23424.88
+              interestPayment: 234234.7
+              debtPayment: 5353.5
+              remainingDebt: 24324.46
+      properties:
+        amount:
+          type: number
+          description: Сумма кредита.
+        term:
+          type: integer
+          format: int32
+          description: Срок кредита.
+        monthlyPayment:
+          type: number
+          description: Ежемесячный платёж.
+        rate:
+          type: number
+          description: Ставка по кредиту.
+        psk:
+          type: number
+          description: Полная стоимость кредита.
+        isInsuranceEnabled:
+          type: boolean
+          description: Есть ли страховка?
+        isSalaryClient:
+          type: boolean
+          description: Является ли зарплатным клиентом?
+        paymentSchedule:
+          type: array
+          description: Расписание платежей по кредиту.
+          items:
+            $ref: '#/components/schemas/PaymentScheduleElement'
+      required:
+        - amount
+        - term
+        - monthlyPayment
+        - rate
+        - psk
+        - isInsuranceEnabled
+        - isSalaryClient
+        - paymentSchedule
+      title: Credit
+      description: Данные о кредите.
+    ApplicationStatusHistory:
+      type: object
+      x-examples:
+        Пример обновления статуса заявки по кредиту.:
+          status: PREAPPROVAL
+          time: '2019-08-24T14:15:22Z'
+          changeType: APPROVED
+      title: ApplicationStatusHistory
+      description: Обновление статуса заявки по кредиту.
+      properties:
+        status:
+          type: string
+          enum:
+            - PREAPPROVAL
+            - APPROVED
+            - CC_DENIED
+            - CC_APPROVED
+            - PREPARE_DOCUMENTS
+            - DOCUMENT_CREATED
+            - CLIENT_DENIED
+            - DOCUMENT_SIGNED
+            - CREDIT_ISSUED
+          description: Текущий статус заявки.
+        time:
+          type: string
+          format: date-time
+          description: Время обновления статуса.
+        changeType:
+          type: string
+          enum:
+            - PREAPPROVAL
+            - APPROVED
+            - CC_DENIED
+            - CC_APPROVED
+            - PREPARE_DOCUMENTS
+            - DOCUMENT_CREATED
+            - CLIENT_DENIED
+            - DOCUMENT_SIGNED
+            - CREDIT_ISSUED
+          description: Новый статус заявки.
+    EmailMessage:
+      type: object
+      x-examples:
+        example-1:
+          address: String
+          theme: Enum
+          applicationId: Long
+      title: EmailMessage
+      description: Модель письма пользователю.
+      properties:
+        address:
+          type: string
+          description: Электронный адрес пользователя.
+        theme:
+          type: string
+          enum:
+            - FINISH_REGISTRATION
+            - CREATE_DOCUMENTS
+            - SEND_DOCUMENTS
+            - SEND_SES
+            - CREDIT_ISSUED
+            - APPLICATION_DENIED
+          description: Тема письма.
+        applicationId:
+          type: integer
+          format: int64
+  securitySchemes: {}
