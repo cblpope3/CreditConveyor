@@ -2,6 +2,7 @@ package ru.leonov.conveyor.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ru.leonov.conveyor.dto.ModelsLoanApplicationRequestDTO;
@@ -9,28 +10,26 @@ import ru.leonov.conveyor.dto.ModelsLoanOfferDTO;
 import ru.leonov.conveyor.exceptions.LoanRequestException;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.time.LocalDate;
 import java.time.Period;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 /**
  * Service that perform pre-scoring job.
  */
 @Service
-@SuppressWarnings("unused")
 public class PreScoringService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    private final CreditCalculationService creditCalculationService;
     private final double baseRate;
 
-    private final Random randomGenerator = new Random();
-
-    public PreScoringService(@Value("${app-params.baseRate}") double baseRate) {
+    @Autowired
+    public PreScoringService(@Value("${app-params.baseRate}") double baseRate,
+                             CreditCalculationService creditCalculationService) {
         this.baseRate = baseRate;
+        this.creditCalculationService = creditCalculationService;
     }
 
     /**
@@ -45,75 +44,10 @@ public class PreScoringService {
         //checking request. exception will be thrown if issues happened.
         this.validateLoanApplicationRequestDTO(loanRequest);
 
-        ArrayList<ModelsLoanOfferDTO> resultList = new ArrayList<>(4);
+        return creditCalculationService.generateCreditOffers(loanRequest.getAmount(), loanRequest.getTerm(),
+                BigDecimal.valueOf(this.baseRate));
 
-        //generating result list with initial parameters
-        for (int i = 0; i < 4; i++) {
-            ModelsLoanOfferDTO modelsLoanOfferDTO = new ModelsLoanOfferDTO();
-            //fixme application id random generation is temporary.
-            modelsLoanOfferDTO.setApplicationId(randomGenerator.nextLong(1, 1000000));
-            modelsLoanOfferDTO.requestedAmount(loanRequest.getAmount());
-            modelsLoanOfferDTO.setTerm(loanRequest.getTerm());
-            modelsLoanOfferDTO.setIsSalaryClient(false);
-            modelsLoanOfferDTO.setIsInsuranceEnabled(false);
-            modelsLoanOfferDTO.setRate(BigDecimal.valueOf(baseRate));
-
-            resultList.add(modelsLoanOfferDTO);
-        }
-        resultList.get(1).setIsInsuranceEnabled(true);
-        resultList.get(2).setIsSalaryClient(true);
-        resultList.get(3).setIsSalaryClient(true);
-        resultList.get(3).setIsInsuranceEnabled(true);
-
-        //calculating different offers
-        for (ModelsLoanOfferDTO modelsLoanOfferDTO : resultList) {
-
-            double paymentForInsurance = 0;
-
-            //calculating current rate depending on base rate and booleans
-            if (Boolean.TRUE.equals(modelsLoanOfferDTO.getIsInsuranceEnabled())) {
-                modelsLoanOfferDTO.setRate(modelsLoanOfferDTO.getRate().subtract(BigDecimal.valueOf(1)));
-                paymentForInsurance = 100000;
-            }
-            if (Boolean.TRUE.equals(modelsLoanOfferDTO.getIsSalaryClient()))
-                modelsLoanOfferDTO.setRate(modelsLoanOfferDTO.getRate().subtract(BigDecimal.valueOf(3)));
-
-            //calculating monthly payment
-            modelsLoanOfferDTO.setMonthlyPayment(this.calculateMonthlyPayment(
-                    modelsLoanOfferDTO.getRequestedAmount(),
-                    modelsLoanOfferDTO.getRate(),
-                    modelsLoanOfferDTO.getTerm()));
-
-            //calculating total credit amount
-            modelsLoanOfferDTO.setTotalAmount(modelsLoanOfferDTO.getMonthlyPayment()
-                    .multiply(BigDecimal.valueOf(modelsLoanOfferDTO.getTerm()), MathContext.DECIMAL64)
-                    .add(BigDecimal.valueOf(paymentForInsurance)));
-        }
-
-        return resultList;
     }
-
-    /**
-     * Method calculate monthly payment. <b>This method is not accurate due it's not counting number of days in
-     * each month.</b>
-     *
-     * @param creditAmount  credit amount.
-     * @param creditRate    credit rate.
-     * @param paymentNumber credit term.
-     * @return monthly payment.
-     */
-    private BigDecimal calculateMonthlyPayment(BigDecimal creditAmount, BigDecimal creditRate, int paymentNumber) {
-        BigDecimal monthlyCreditRate = creditRate.divide(BigDecimal.valueOf(1200), MathContext.DECIMAL64);
-        BigDecimal partialResult = monthlyCreditRate
-                .add(BigDecimal.valueOf(1))
-                .pow(paymentNumber, MathContext.DECIMAL64);
-
-        BigDecimal annualCoefficient = partialResult.multiply(monthlyCreditRate)
-                .divide(partialResult.subtract(BigDecimal.valueOf(1)), MathContext.DECIMAL64);
-
-        return creditAmount.multiply(annualCoefficient, MathContext.DECIMAL64);
-    }
-
 
     /**
      * Method checks that loan request has valid format.

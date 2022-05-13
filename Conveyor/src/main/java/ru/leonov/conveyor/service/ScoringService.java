@@ -2,42 +2,49 @@ package ru.leonov.conveyor.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ru.leonov.conveyor.dto.ModelsCreditDTO;
 import ru.leonov.conveyor.dto.ModelsEmploymentDTO;
-import ru.leonov.conveyor.dto.ModelsPaymentScheduleElementDTO;
 import ru.leonov.conveyor.dto.ModelsScoringDataDTO;
 import ru.leonov.conveyor.exceptions.ScoringException;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Period;
-import java.util.List;
 
-//todo writejavadoc
+/**
+ * This service handle scoring process.
+ */
 @Service
 public class ScoringService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final double baseRate;
+    private final CreditCalculationService creditCalculationService;
 
-    public ScoringService(@Value("${app-params.baseRate}") double baseRate) {
+    @Autowired
+    public ScoringService(@Value("${app-params.baseRate}") double baseRate,
+                          CreditCalculationService creditCalculationService) {
         this.baseRate = baseRate;
+        this.creditCalculationService = creditCalculationService;
     }
 
-    //todo write javadoc
+    /**
+     * Calculate credit rate and create detailed credit offer.
+     *
+     * @param scoringData data for requested credit scoring.
+     * @return detailed credit offer.
+     * @throws ScoringException if scoring data didn't pass data validation.
+     */
     public ModelsCreditDTO calculateCredit(ModelsScoringDataDTO scoringData) throws ScoringException {
-        //todo implement this
-        this.calculateRate(scoringData);
-        return null;
-    }
 
-    //todo write javadoc
-    private List<ModelsPaymentScheduleElementDTO> calculatePaymentSchedule(ModelsScoringDataDTO scoringData) {
-        //todo implement this
-        return null;
+        BigDecimal rate = BigDecimal.valueOf(this.calculateRate(scoringData));
+
+        return creditCalculationService.calculateCredit(scoringData.getAmount(), rate, scoringData.getTerm(),
+                scoringData.getIsInsuranceEnabled(), scoringData.getIsSalaryClient());
     }
 
     /**
