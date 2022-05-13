@@ -12,7 +12,9 @@ import ru.leonov.conveyor.dto.ModelsLoanApplicationRequestDTO;
 import ru.leonov.conveyor.dto.ModelsLoanOfferDTO;
 import ru.leonov.conveyor.dto.ModelsScoringDataDTO;
 import ru.leonov.conveyor.exceptions.LoanRequestException;
+import ru.leonov.conveyor.exceptions.ScoringException;
 import ru.leonov.conveyor.service.PreScoringService;
+import ru.leonov.conveyor.service.ScoringService;
 
 import java.util.List;
 
@@ -22,10 +24,12 @@ public class Conveyor implements DefaultApi {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final PreScoringService preScoringService;
+    private final ScoringService scoringService;
 
     @Autowired
-    public Conveyor(PreScoringService preScoringService) {
+    public Conveyor(PreScoringService preScoringService, ScoringService scoringService) {
         this.preScoringService = preScoringService;
+        this.scoringService = scoringService;
     }
 
     /**
@@ -33,9 +37,17 @@ public class Conveyor implements DefaultApi {
      */
     @Override
     public ResponseEntity<ModelsCreditDTO> postConveyorCalculation(ModelsScoringDataDTO modelsScoringDataDTO) {
-        //todo implement this
-        System.out.println("got post conveyor calculation request");
-        return null;
+
+        if (logger.isTraceEnabled()) logger.trace("Got /conveyor/calculation request.");
+
+        try {
+            ModelsCreditDTO credit = scoringService.calculateCredit(modelsScoringDataDTO);
+            if (logger.isDebugEnabled()) logger.debug("Credit calculated, returning response.");
+            return new ResponseEntity<>(credit, HttpStatus.OK);
+        } catch (ScoringException e) {
+            if (logger.isDebugEnabled()) logger.debug("Credit denied. Reason: {}", e.getMessage());
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
     }
 
     /**
