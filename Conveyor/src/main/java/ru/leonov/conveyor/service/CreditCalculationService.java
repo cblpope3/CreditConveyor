@@ -24,8 +24,8 @@ public class CreditCalculationService {
 
     private static final BigDecimal MONTHS_IN_YEAR = BigDecimal.valueOf(12);
     private static final BigDecimal HUNDRED_PERCENTS = BigDecimal.valueOf(100);
-    private static final int BASE_PERIOD = 30;
-    private static final double DAYS_IN_YEAR = 365.0;
+    private static final BigDecimal BASE_PERIOD = BigDecimal.valueOf(30);
+    private static final BigDecimal DAYS_IN_YEAR = BigDecimal.valueOf(365);
     private static final BigDecimal INSURANCE_COST = BigDecimal.valueOf(100000);
     private static final int PSK_ITERATION_LIMIT = 10000;
     private static final BigDecimal PSK_INITIAL_STEP_SIZE = BigDecimal.valueOf(0.01);
@@ -199,7 +199,9 @@ public class CreditCalculationService {
         int paymentsNumber = payments.size();
 
 
-        long basePeriodNumberInYear = Math.round(DAYS_IN_YEAR / BASE_PERIOD);
+        BigDecimal basePeriodNumberInYear = DAYS_IN_YEAR.divide(BASE_PERIOD, MathContext.DECIMAL64)
+                .setScale(0, RoundingMode.HALF_UP);
+
 
         //pre-calculation of days number from loan obtaining date to given payment date.
         List<Long> daysFromLoanObtained = new ArrayList<>();
@@ -214,11 +216,11 @@ public class CreditCalculationService {
         for (int k = 0; k < paymentsNumber; k++) {
             //e[k] = (daysFromLoanObtained[k] % BASE_PERIOD) / BASE_PERIOD
             ek.add((BigDecimal.valueOf(daysFromLoanObtained.get(k))
-                    .remainder(BigDecimal.valueOf(BASE_PERIOD)))
-                    .divide(BigDecimal.valueOf(BASE_PERIOD), MathContext.DECIMAL64));
+                    .remainder(BASE_PERIOD))
+                    .divide(BASE_PERIOD, MathContext.DECIMAL64));
 
             //q[k] = Math.floor(daysFromLoanObtained[k] / BASE_PERIOD)
-            qk.add(daysFromLoanObtained.get(k) / BASE_PERIOD);
+            qk.add(daysFromLoanObtained.get(k) / BASE_PERIOD.intValue());
         }
 
         //calculation of 'i' coefficient (base period percent rate, whatever it means).
@@ -272,7 +274,7 @@ public class CreditCalculationService {
         }
 
         //finally, calculating requested PSK.
-        return i.multiply(BigDecimal.valueOf(basePeriodNumberInYear))
+        return i.multiply(basePeriodNumberInYear)
                 .multiply(HUNDRED_PERCENTS)
                 .setScale(2, RoundingMode.HALF_UP);
     }

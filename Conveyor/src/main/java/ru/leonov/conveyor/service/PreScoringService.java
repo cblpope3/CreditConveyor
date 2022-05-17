@@ -25,12 +25,12 @@ public class PreScoringService {
     private static final Integer MIN_AGE = 18;
 
     private final CreditCalculationService creditCalculationService;
-    private final double baseRate;
+    private final BigDecimal baseRate;
 
     @Autowired
     public PreScoringService(@Value("${app-params.baseRate}") double baseRate,
                              CreditCalculationService creditCalculationService) {
-        this.baseRate = baseRate;
+        this.baseRate = BigDecimal.valueOf(baseRate);
         this.creditCalculationService = creditCalculationService;
     }
 
@@ -47,7 +47,7 @@ public class PreScoringService {
         validateLoanApplicationRequestDTO(loanRequest);
 
         return creditCalculationService.generateCreditOffers(loanRequest.getAmount(), loanRequest.getTerm(),
-                BigDecimal.valueOf(baseRate));
+                baseRate);
 
     }
 

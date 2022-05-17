@@ -42,13 +42,13 @@ public class ScoringService {
     //Сумма займа больше, чем 20 зарплат → отказ
     private static final BigDecimal SALARY_TO_LOAN_RATE_LIMIT = BigDecimal.valueOf(20);
 
-    private final double baseRate;
+    private final BigDecimal baseRate;
     private final CreditCalculationService creditCalculationService;
 
     @Autowired
     public ScoringService(@Value("${app-params.baseRate}") double baseRate,
                           CreditCalculationService creditCalculationService) {
-        this.baseRate = baseRate;
+        this.baseRate = BigDecimal.valueOf(baseRate);
         this.creditCalculationService = creditCalculationService;
     }
 
@@ -61,7 +61,7 @@ public class ScoringService {
      */
     public ModelsCreditDTO calculateCredit(ModelsScoringDataDTO scoringData) throws ScoringException {
 
-        BigDecimal rate = BigDecimal.valueOf(calculateRate(scoringData));
+        BigDecimal rate = calculateRate(scoringData);
 
         return creditCalculationService.calculateCredit(scoringData.getAmount(), rate, scoringData.getTerm(),
                 scoringData.getIsInsuranceEnabled(), scoringData.getIsSalaryClient());
@@ -74,20 +74,20 @@ public class ScoringService {
      * @return credit rate.
      * @throws ScoringException if scoring data is unacceptable to get credit.
      */
-    private double calculateRate(ModelsScoringDataDTO scoringData) throws ScoringException {
+    private BigDecimal calculateRate(ModelsScoringDataDTO scoringData) throws ScoringException {
 
         if (log.isTraceEnabled()) log.trace("Calculating credit rate. Base rate is {}.", baseRate);
 
-        double resultRate = baseRate;
+        BigDecimal resultRate = baseRate;
 
-        resultRate += getJobCorrection(scoringData.getEmployment().getEmploymentStatus(),
-                scoringData.getEmployment().getPosition());
-        resultRate += getSalaryCorrection(scoringData.getAmount(), scoringData.getEmployment().getSalary());
-        resultRate += getFamilyCorrection(scoringData.getMaritalStatus(), scoringData.getDependentAmount());
-        resultRate += getAgeRateCorrection(scoringData.getBirthdate(), scoringData.getGender());
-        resultRate += getExperienceRateCorrection(
+        resultRate = resultRate.add(getJobCorrection(scoringData.getEmployment().getEmploymentStatus(),
+                scoringData.getEmployment().getPosition()));
+        resultRate = resultRate.add(getSalaryCorrection(scoringData.getAmount(), scoringData.getEmployment().getSalary()));
+        resultRate = resultRate.add(getFamilyCorrection(scoringData.getMaritalStatus(), scoringData.getDependentAmount()));
+        resultRate = resultRate.add(getAgeRateCorrection(scoringData.getBirthdate(), scoringData.getGender()));
+        resultRate = resultRate.add(getExperienceRateCorrection(
                 scoringData.getEmployment().getWorkExperienceTotal(),
-                scoringData.getEmployment().getWorkExperienceCurrent());
+                scoringData.getEmployment().getWorkExperienceCurrent()));
 
         if (log.isDebugEnabled()) log.debug("Credit rate is calculated: {}.", resultRate);
 
@@ -102,32 +102,32 @@ public class ScoringService {
      * @return credit rate correction coefficient.
      * @throws ScoringException if clients employment status is unacceptable to get credit.
      */
-    private double getJobCorrection(ModelsEmploymentDTO.EmploymentStatusEnum employmentStatus,
-                                    ModelsEmploymentDTO.PositionEnum jobPosition) throws ScoringException {
+    private BigDecimal getJobCorrection(ModelsEmploymentDTO.EmploymentStatusEnum employmentStatus,
+                                        ModelsEmploymentDTO.PositionEnum jobPosition) throws ScoringException {
 
-        double resultCorrection = 0;
+        BigDecimal resultCorrection = BigDecimal.ZERO;
 
         if (employmentStatus.equals(ModelsEmploymentDTO.EmploymentStatusEnum.UNEMPLOYED)) {
             // Безработный → отказ
             throw new ScoringException(ScoringException.ExceptionCause.UNACCEPTABLE_EMPLOYER_STATUS);
         } else if (employmentStatus.equals(ModelsEmploymentDTO.EmploymentStatusEnum.SELF_EMPLOYED)) {
             // Самозанятый → ставка увеличивается на 1
-            resultCorrection += 1;
+            resultCorrection = resultCorrection.add(BigDecimal.ONE);
             if (log.isTraceEnabled()) log.trace("Credit rate is increased by 1 because self-employed.");
         } else if (employmentStatus.equals(ModelsEmploymentDTO.EmploymentStatusEnum.BUSINESS_OWNER)) {
             // Владелец бизнеса → ставка увеличивается на 3
-            resultCorrection += 3;
+            resultCorrection = resultCorrection.add(BigDecimal.valueOf(3));
             if (log.isTraceEnabled()) log.trace("Credit rate is increased by 3 because business owner.");
         }
 
         if (jobPosition.equals(ModelsEmploymentDTO.PositionEnum.MID_MANAGER)) {
             // Менеджер среднего звена → ставка уменьшается на 2
-            resultCorrection -= 2;
+            resultCorrection = resultCorrection.subtract(BigDecimal.valueOf(2));
             if (log.isTraceEnabled()) log.trace("Credit rate is decreased by 2 because mid-manager.");
 
         } else if (jobPosition.equals(ModelsEmploymentDTO.PositionEnum.TOP_MANAGER)) {
             // Топ-менеджер → ставка уменьшается на 4
-            resultCorrection -= 4;
+            resultCorrection = resultCorrection.subtract(BigDecimal.valueOf(4));
             if (log.isTraceEnabled()) log.trace("Credit rate is decreased by 4 because top-manager.");
         }
 
@@ -142,12 +142,12 @@ public class ScoringService {
      * @return credit rate correction coefficient.
      * @throws ScoringException if clients salary is insufficient to get credit.
      */
-    private double getSalaryCorrection(BigDecimal creditAmount, BigDecimal salary) throws ScoringException {
+    private BigDecimal getSalaryCorrection(BigDecimal creditAmount, BigDecimal salary) throws ScoringException {
         if (creditAmount.compareTo(salary.multiply(SALARY_TO_LOAN_RATE_LIMIT)) > 0) {
             //Сумма займа больше, чем 20 зарплат → отказ
             throw new ScoringException(ScoringException.ExceptionCause.INSUFFICIENT_SALARY);
         }
-        return 0;
+        return BigDecimal.ZERO;
     }
 
     /**
@@ -157,23 +157,23 @@ public class ScoringService {
      * @param dependentAmount amount of dependent persons (children etc.).
      * @return credit rate correction coefficient.
      */
-    private double getFamilyCorrection(ModelsScoringDataDTO.MaritalStatusEnum maritalStatus, Integer dependentAmount) {
+    private BigDecimal getFamilyCorrection(ModelsScoringDataDTO.MaritalStatusEnum maritalStatus, Integer dependentAmount) {
 
-        double resultCorrection = 0;
+        BigDecimal resultCorrection = BigDecimal.ZERO;
 
         if (maritalStatus.equals(ModelsScoringDataDTO.MaritalStatusEnum.MARRIED)) {
             // Замужем/женат → ставка уменьшается на 3
             if (log.isTraceEnabled()) log.trace("Credit rate is decreased by 3 because married.");
-            resultCorrection -= 3;
+            resultCorrection = resultCorrection.subtract(BigDecimal.valueOf(3));
         } else if (maritalStatus.equals(ModelsScoringDataDTO.MaritalStatusEnum.DIVORCED)) {
             // Разведен → ставка увеличивается на 1
             if (log.isTraceEnabled()) log.trace("Credit rate is increased by 1 because divorced.");
-            resultCorrection += 1;
+            resultCorrection = resultCorrection.add(BigDecimal.ONE);
         }
 
         if (dependentAmount > PREFERRED_DEPENDENT_AMOUNT_MAX) {
             //Количество иждивенцев больше 1 → ставка увеличивается на 1
-            resultCorrection += 1;
+            resultCorrection = resultCorrection.add(BigDecimal.ONE);
             if (log.isTraceEnabled())
                 log.trace("Credit rate is increased by 1 because too much dependent persons.");
         }
@@ -189,7 +189,9 @@ public class ScoringService {
      * @return credit rate correction coefficient.
      * @throws ScoringException if client age is out of acceptable range.
      */
-    private double getAgeRateCorrection(LocalDate birthday, ModelsScoringDataDTO.GenderEnum gender) throws ScoringException {
+    private BigDecimal getAgeRateCorrection(LocalDate birthday, ModelsScoringDataDTO.GenderEnum gender) throws ScoringException {
+
+        BigDecimal resultCorrection = BigDecimal.ZERO;
 
         int age = Period.between(birthday, LocalDate.now()).getYears();
         if (log.isTraceEnabled()) log.trace("Customers birthday is {}. Calculated age: {}.", birthday, age);
@@ -205,7 +207,7 @@ public class ScoringService {
 
             if (log.isTraceEnabled())
                 log.trace("Credit rate is decreased by 3 because male with fine age.");
-            return -3;
+            resultCorrection = resultCorrection.subtract(BigDecimal.valueOf(3));
 
         } else if (gender.equals(ModelsScoringDataDTO.GenderEnum.FEMALE)
                 && age >= FEMALE_PREFERRED_AGE_MIN && age <= FEMALE_PREFERRED_AGE_MAX) {
@@ -213,16 +215,17 @@ public class ScoringService {
 
             if (log.isTraceEnabled())
                 log.trace("Credit rate is decreased by 3 because female with fine age.");
-            return -3;
+            resultCorrection = resultCorrection.subtract(BigDecimal.valueOf(3));
 
         } else if (gender.equals(ModelsScoringDataDTO.GenderEnum.NON_BINARY)) {
             // Небинарный → ставка увеличивается на 3
 
             if (log.isTraceEnabled()) log.trace("Credit rate is increased by 3 because non-binary person.");
-            return 3;
+            resultCorrection = resultCorrection.add(BigDecimal.valueOf(3));
 
-        } else return 0;
+        }
 
+        return resultCorrection;
     }
 
     /**
@@ -233,7 +236,7 @@ public class ScoringService {
      * @return credit rate correction coefficient.
      * @throws ScoringException if client work experience is insufficient.
      */
-    private double getExperienceRateCorrection(Integer totalExperience, Integer currentExperience) throws ScoringException {
+    private BigDecimal getExperienceRateCorrection(Integer totalExperience, Integer currentExperience) throws ScoringException {
         // Стаж работы:
         // Общий стаж менее 12 месяцев → отказ
         // Текущий стаж менее 3 месяцев → отказ
@@ -241,7 +244,7 @@ public class ScoringService {
             throw new ScoringException(ScoringException.ExceptionCause.INSUFFICIENT_EXPERIENCE);
         }
 
-        return 0;
+        return BigDecimal.ZERO;
     }
 
 }
