@@ -26,7 +26,7 @@ public class ScoringException extends Exception {
         }
 
         public String getUserFriendlyMessage() {
-            return this.userFriendlyMessage;
+            return userFriendlyMessage;
         }
     }
 }

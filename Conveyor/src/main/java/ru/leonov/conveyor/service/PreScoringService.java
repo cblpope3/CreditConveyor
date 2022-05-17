@@ -44,10 +44,10 @@ public class PreScoringService {
     public List<ModelsLoanOfferDTO> getCreditOfferList(ModelsLoanApplicationRequestDTO loanRequest) throws LoanRequestException {
 
         //checking request. exception will be thrown if issues happened.
-        this.validateLoanApplicationRequestDTO(loanRequest);
+        validateLoanApplicationRequestDTO(loanRequest);
 
         return creditCalculationService.generateCreditOffers(loanRequest.getAmount(), loanRequest.getTerm(),
-                BigDecimal.valueOf(this.baseRate));
+                BigDecimal.valueOf(baseRate));
 
     }
 
@@ -62,21 +62,21 @@ public class PreScoringService {
 
         if (log.isTraceEnabled()) log.trace("Validating loan request...");
 
-        this.parametersNullCheck(loanRequest);
+        parametersNullCheck(loanRequest);
 
         // First and last name - from 2 to 30 english letters, not null.
         // Middle name - from 2 to 30 english letters, nullable.
-        this.validateName(loanRequest.getFirstName());
-        this.validateName(loanRequest.getLastName());
+        validateName(loanRequest.getFirstName());
+        validateName(loanRequest.getLastName());
         if (loanRequest.getMiddleName() != null)
-            this.validateName(loanRequest.getMiddleName());
+            validateName(loanRequest.getMiddleName());
 
-        this.validateCreditAmount(loanRequest.getAmount());
-        this.validateCreditTerm(loanRequest.getTerm());
-        this.validateCustomerAge(loanRequest.getBirthdate());
-        this.validateEmail(loanRequest.getEmail());
-        this.validatePassportSeries(loanRequest.getPassportSeries());
-        this.validatePassportNumber(loanRequest.getPassportNumber());
+        validateCreditAmount(loanRequest.getAmount());
+        validateCreditTerm(loanRequest.getTerm());
+        validateCustomerAge(loanRequest.getBirthdate());
+        validateEmail(loanRequest.getEmail());
+        validatePassportSeries(loanRequest.getPassportSeries());
+        validatePassportNumber(loanRequest.getPassportNumber());
 
         if (log.isTraceEnabled()) log.trace("Loan request is valid.");
     }

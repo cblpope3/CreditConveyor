@@ -80,7 +80,7 @@ public class CreditCalculationService {
                 modelsLoanOfferDTO.setRate(modelsLoanOfferDTO.getRate().subtract(BigDecimal.valueOf(3)));
 
             //calculating monthly payment
-            modelsLoanOfferDTO.setMonthlyPayment(this.calculateMonthlyPayment(
+            modelsLoanOfferDTO.setMonthlyPayment(calculateMonthlyPayment(
                     modelsLoanOfferDTO.getRequestedAmount(),
                     modelsLoanOfferDTO.getRate(),
                     modelsLoanOfferDTO.getTerm()));
@@ -123,12 +123,12 @@ public class CreditCalculationService {
         credit.setIsSalaryClient(isSalaryClient);
 
         // размер ежемесячного платежа(monthlyPayment),
-        BigDecimal monthlyPayment = this.calculateMonthlyPayment(creditAmount, creditRate, creditTerm);
+        BigDecimal monthlyPayment = calculateMonthlyPayment(creditAmount, creditRate, creditTerm);
         // график ежемесячных платежей (List<PaymentScheduleElement>)
-        List<ModelsPaymentScheduleElementDTO> paymentSchedule = this.calculateMonthlyPaymentsSchedule(
+        List<ModelsPaymentScheduleElementDTO> paymentSchedule = calculateMonthlyPaymentsSchedule(
                 creditAmount, creditTerm,
                 creditRate.divide(MONTHS_IN_YEAR.multiply(HUNDRED_PERCENTS), MathContext.DECIMAL64), monthlyPayment);
-        BigDecimal psk = this.calculatePSK(paymentSchedule, creditAmount);
+        BigDecimal psk = calculatePSK(paymentSchedule, creditAmount);
 
         credit.setMonthlyPayment(monthlyPayment);
         credit.setPaymentSchedule(paymentSchedule);
@@ -319,7 +319,7 @@ public class CreditCalculationService {
             paymentScheduleElement.setNumber(i);
             paymentScheduleElement.setDate(paymentDate);
 
-            paymentScheduleElement.setInterestPayment(this.calculateInterestPart(remainingDebt, monthlyRate));
+            paymentScheduleElement.setInterestPayment(calculateInterestPart(remainingDebt, monthlyRate));
 
             if (i == creditTerm) {
                 //if it's last payment - pay all remaining debt

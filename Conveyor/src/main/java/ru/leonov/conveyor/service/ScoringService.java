@@ -61,7 +61,7 @@ public class ScoringService {
      */
     public ModelsCreditDTO calculateCredit(ModelsScoringDataDTO scoringData) throws ScoringException {
 
-        BigDecimal rate = BigDecimal.valueOf(this.calculateRate(scoringData));
+        BigDecimal rate = BigDecimal.valueOf(calculateRate(scoringData));
 
         return creditCalculationService.calculateCredit(scoringData.getAmount(), rate, scoringData.getTerm(),
                 scoringData.getIsInsuranceEnabled(), scoringData.getIsSalaryClient());
@@ -80,12 +80,12 @@ public class ScoringService {
 
         double resultRate = baseRate;
 
-        resultRate += this.getJobCorrection(scoringData.getEmployment().getEmploymentStatus(),
+        resultRate += getJobCorrection(scoringData.getEmployment().getEmploymentStatus(),
                 scoringData.getEmployment().getPosition());
-        resultRate += this.getSalaryCorrection(scoringData.getAmount(), scoringData.getEmployment().getSalary());
-        resultRate += this.getFamilyCorrection(scoringData.getMaritalStatus(), scoringData.getDependentAmount());
-        resultRate += this.getAgeRateCorrection(scoringData.getBirthdate(), scoringData.getGender());
-        resultRate += this.getExperienceRateCorrection(
+        resultRate += getSalaryCorrection(scoringData.getAmount(), scoringData.getEmployment().getSalary());
+        resultRate += getFamilyCorrection(scoringData.getMaritalStatus(), scoringData.getDependentAmount());
+        resultRate += getAgeRateCorrection(scoringData.getBirthdate(), scoringData.getGender());
+        resultRate += getExperienceRateCorrection(
                 scoringData.getEmployment().getWorkExperienceTotal(),
                 scoringData.getEmployment().getWorkExperienceCurrent());
 
