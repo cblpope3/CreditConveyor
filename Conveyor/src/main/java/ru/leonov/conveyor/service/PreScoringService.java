@@ -125,11 +125,10 @@ public class PreScoringService {
      */
     private void validateCreditAmount(BigDecimal requestedAmount) throws LoanRequestException {
         if (requestedAmount.compareTo(MIN_CREDIT_AMOUNT) < 0) {
-            LoanRequestException exception = new LoanRequestException(
-                    LoanRequestException.ExceptionCause.INCORRECT_CREDIT_AMOUNT,
+            if (log.isDebugEnabled())
+                log.debug(LoanRequestException.ExceptionCause.INCORRECT_CREDIT_AMOUNT.getUserFriendlyMessage());
+            throw new LoanRequestException(LoanRequestException.ExceptionCause.INCORRECT_CREDIT_AMOUNT,
                     requestedAmount.toString());
-            if (log.isDebugEnabled()) log.debug(exception.getMessage());
-            throw exception;
         }
     }
 
@@ -141,11 +140,10 @@ public class PreScoringService {
      */
     private void validateCreditTerm(Integer creditTerm) throws LoanRequestException {
         if (creditTerm < MIN_CREDIT_TERM) {
-            LoanRequestException exception = new LoanRequestException(
-                    LoanRequestException.ExceptionCause.INCORRECT_CREDIT_TERM,
+            if (log.isDebugEnabled())
+                log.debug(LoanRequestException.ExceptionCause.INCORRECT_CREDIT_TERM.getUserFriendlyMessage());
+            throw new LoanRequestException(LoanRequestException.ExceptionCause.INCORRECT_CREDIT_TERM,
                     creditTerm.toString());
-            if (log.isDebugEnabled()) log.debug(exception.getMessage());
-            throw exception;
         }
     }
 
@@ -158,11 +156,10 @@ public class PreScoringService {
     private void validateCustomerAge(LocalDate birthday) throws LoanRequestException {
         Period period = Period.between(birthday, LocalDate.now());
         if (period.getYears() < MIN_AGE) {
-            LoanRequestException exception = new LoanRequestException(
-                    LoanRequestException.ExceptionCause.PERSON_TOO_YOUNG,
+            if (log.isDebugEnabled())
+                log.debug(LoanRequestException.ExceptionCause.PERSON_TOO_YOUNG.getUserFriendlyMessage());
+            throw new LoanRequestException(LoanRequestException.ExceptionCause.PERSON_TOO_YOUNG,
                     String.valueOf(period.getYears()));
-            if (log.isDebugEnabled()) log.debug(exception.getMessage());
-            throw exception;
         }
     }
 
@@ -174,12 +171,10 @@ public class PreScoringService {
      */
     private void validateEmail(String email) throws LoanRequestException {
         if (!email.matches("[\\w\\.]{2,50}@[\\w\\.]{2,20}")) {
-            LoanRequestException exception = new LoanRequestException(
-                    LoanRequestException.ExceptionCause.INCORRECT_EMAIL,
-                    email);
 
-            if (log.isDebugEnabled()) log.debug(exception.getMessage());
-            throw exception;
+            if (log.isDebugEnabled())
+                log.debug(LoanRequestException.ExceptionCause.INCORRECT_EMAIL.getUserFriendlyMessage());
+            throw new LoanRequestException(LoanRequestException.ExceptionCause.INCORRECT_EMAIL, email);
         }
     }
 
@@ -191,11 +186,9 @@ public class PreScoringService {
      */
     private void validatePassportSeries(String series) throws LoanRequestException {
         if (!series.matches("[\\d]{4}")) {
-            LoanRequestException exception = new LoanRequestException(
-                    LoanRequestException.ExceptionCause.INCORRECT_PASSPORT_SERIES,
-                    series);
-            if (log.isDebugEnabled()) log.debug(exception.getMessage());
-            throw exception;
+            if (log.isDebugEnabled())
+                log.debug(LoanRequestException.ExceptionCause.INCORRECT_PASSPORT_SERIES.getUserFriendlyMessage());
+            throw new LoanRequestException(LoanRequestException.ExceptionCause.INCORRECT_PASSPORT_SERIES, series);
         }
     }
 
@@ -207,11 +200,9 @@ public class PreScoringService {
      */
     private void validatePassportNumber(String number) throws LoanRequestException {
         if (!number.matches("[\\d]{6}")) {
-            LoanRequestException exception = new LoanRequestException(
-                    LoanRequestException.ExceptionCause.INCORRECT_PASSPORT_NUMBER,
-                    number);
-            if (log.isDebugEnabled()) log.debug(exception.getMessage());
-            throw exception;
+            if (log.isDebugEnabled())
+                log.debug(LoanRequestException.ExceptionCause.INCORRECT_PASSPORT_NUMBER.getUserFriendlyMessage());
+            throw new LoanRequestException(LoanRequestException.ExceptionCause.INCORRECT_PASSPORT_NUMBER, number);
         }
     }
 }
