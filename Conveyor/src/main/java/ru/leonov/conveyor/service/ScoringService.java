@@ -20,6 +20,28 @@ import java.time.Period;
 @Service
 public class ScoringService {
 
+    // Общий стаж менее 12 месяцев → отказ
+    // Текущий стаж менее 3 месяцев → отказ
+    private static final Integer MIN_TOTAL_EXPERIENCE = 12;
+    private static final Integer MIN_CURRENT_EXPERIENCE = 3;
+
+    // Возраст менее 20 или более 60 лет → отказ
+    private static final Integer MIN_LOAN_AGE = 20;
+    private static final Integer MAX_LOAN_AGE = 60;
+
+    // Мужчина, возраст от 30 до 55 лет → ставка уменьшается на 3
+    // Женщина, возраст от 35 до 60 лет → ставка уменьшается на 3
+    private static final Integer MALE_PREFERRED_AGE_MIN = 30;
+    private static final Integer MALE_PREFERRED_AGE_MAX = 55;
+    private static final Integer FEMALE_PREFERRED_AGE_MIN = 35;
+    private static final Integer FEMALE_PREFERRED_AGE_MAX = 60;
+
+    //Количество иждивенцев больше 1 → ставка увеличивается на 1
+    private static final Integer PREFERRED_DEPENDENT_AMOUNT_MAX = 1;
+
+    //Сумма займа больше, чем 20 зарплат → отказ
+    private static final BigDecimal SALARY_TO_LOAN_RATE_LIMIT = BigDecimal.valueOf(20);
+
     private final double baseRate;
     private final CreditCalculationService creditCalculationService;
 
@@ -121,7 +143,7 @@ public class ScoringService {
      * @throws ScoringException if clients salary is insufficient to get credit.
      */
     private double getSalaryCorrection(BigDecimal creditAmount, BigDecimal salary) throws ScoringException {
-        if (creditAmount.compareTo(salary.multiply(BigDecimal.valueOf(20))) > 0) {
+        if (creditAmount.compareTo(salary.multiply(SALARY_TO_LOAN_RATE_LIMIT)) > 0) {
             //Сумма займа больше, чем 20 зарплат → отказ
             throw new ScoringException(ScoringException.ExceptionCause.INSUFFICIENT_SALARY);
         }
@@ -149,7 +171,7 @@ public class ScoringService {
             resultCorrection += 1;
         }
 
-        if (dependentAmount > 1) {
+        if (dependentAmount > PREFERRED_DEPENDENT_AMOUNT_MAX) {
             //Количество иждивенцев больше 1 → ставка увеличивается на 1
             resultCorrection += 1;
             if (log.isTraceEnabled())
@@ -173,18 +195,20 @@ public class ScoringService {
         if (log.isTraceEnabled()) log.trace("Customers birthday is {}. Calculated age: {}.", birthday, age);
 
         // Возраст менее 20 или более 60 лет → отказ
-        if (age < 20 || age > 60) {
+        if (age < MIN_LOAN_AGE || age > MAX_LOAN_AGE) {
 
             throw new ScoringException(ScoringException.ExceptionCause.UNACCEPTABLE_AGE);
 
-        } else if (age >= 30 && age <= 55 && gender.equals(ModelsScoringDataDTO.GenderEnum.MALE)) {
+        } else if (gender.equals(ModelsScoringDataDTO.GenderEnum.MALE)
+                && age >= MALE_PREFERRED_AGE_MIN && age <= MALE_PREFERRED_AGE_MAX) {
             // Мужчина, возраст от 30 до 55 лет → ставка уменьшается на 3
 
             if (log.isTraceEnabled())
                 log.trace("Credit rate is decreased by 3 because male with fine age.");
             return -3;
 
-        } else if (age >= 35 && age <= 55 && gender.equals(ModelsScoringDataDTO.GenderEnum.FEMALE)) {
+        } else if (gender.equals(ModelsScoringDataDTO.GenderEnum.FEMALE)
+                && age >= FEMALE_PREFERRED_AGE_MIN && age <= FEMALE_PREFERRED_AGE_MAX) {
             // Женщина, возраст от 35 до 60 лет → ставка уменьшается на 3
 
             if (log.isTraceEnabled())
@@ -213,7 +237,7 @@ public class ScoringService {
         // Стаж работы:
         // Общий стаж менее 12 месяцев → отказ
         // Текущий стаж менее 3 месяцев → отказ
-        if (totalExperience < 12 || currentExperience < 3) {
+        if (totalExperience < MIN_TOTAL_EXPERIENCE || currentExperience < MIN_CURRENT_EXPERIENCE) {
             throw new ScoringException(ScoringException.ExceptionCause.INSUFFICIENT_EXPERIENCE);
         }
 

@@ -20,6 +20,10 @@ import java.util.List;
 @Service
 public class PreScoringService {
 
+    private static final BigDecimal MIN_CREDIT_AMOUNT = BigDecimal.valueOf(10000);
+    private static final Integer MIN_CREDIT_TERM = 6;
+    private static final Integer MIN_AGE = 18;
+
     private final CreditCalculationService creditCalculationService;
     private final double baseRate;
 
@@ -120,7 +124,7 @@ public class PreScoringService {
      * @throws LoanRequestException if requested credit amount is less than 10000.
      */
     private void validateCreditAmount(BigDecimal requestedAmount) throws LoanRequestException {
-        if (requestedAmount.compareTo(BigDecimal.valueOf(10000)) < 0) {
+        if (requestedAmount.compareTo(MIN_CREDIT_AMOUNT) < 0) {
             LoanRequestException exception = new LoanRequestException(
                     LoanRequestException.ExceptionCause.INCORRECT_CREDIT_AMOUNT,
                     requestedAmount.toString());
@@ -136,7 +140,7 @@ public class PreScoringService {
      * @throws LoanRequestException if term of requested credit is less than 6 months.
      */
     private void validateCreditTerm(Integer creditTerm) throws LoanRequestException {
-        if (creditTerm < 6) {
+        if (creditTerm < MIN_CREDIT_TERM) {
             LoanRequestException exception = new LoanRequestException(
                     LoanRequestException.ExceptionCause.INCORRECT_CREDIT_TERM,
                     creditTerm.toString());
@@ -153,7 +157,7 @@ public class PreScoringService {
      */
     private void validateCustomerAge(LocalDate birthday) throws LoanRequestException {
         Period period = Period.between(birthday, LocalDate.now());
-        if (period.getYears() < 18) {
+        if (period.getYears() < MIN_AGE) {
             LoanRequestException exception = new LoanRequestException(
                     LoanRequestException.ExceptionCause.PERSON_TOO_YOUNG,
                     String.valueOf(period.getYears()));

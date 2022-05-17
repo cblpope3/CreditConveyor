@@ -22,7 +22,17 @@ import java.util.Random;
 @Service
 public class CreditCalculationService {
 
+    private static final BigDecimal MONTHS_IN_YEAR = BigDecimal.valueOf(12);
+    private static final BigDecimal HUNDRED_PERCENTS = BigDecimal.valueOf(100);
+    private static final int BASE_PERIOD = 30;
+    private static final double DAYS_IN_YEAR = 365.0;
+    private static final BigDecimal INSURANCE_COST = BigDecimal.valueOf(100000);
+    private static final int PSK_ITERATION_LIMIT = 10000;
+    private static final BigDecimal PSK_INITIAL_STEP_SIZE = BigDecimal.valueOf(0.01);
+    private static final BigDecimal PSK_RESULT_TOLERANCE = BigDecimal.valueOf(0.0001);
+
     private final Random randomGenerator = new Random();
+
 
     /**
      * This method calculating four not detailed credit offers to customer.
@@ -59,12 +69,12 @@ public class CreditCalculationService {
         //calculating different offers
         for (ModelsLoanOfferDTO modelsLoanOfferDTO : resultList) {
 
-            double paymentForInsurance = 0;
+            BigDecimal paymentForInsurance = BigDecimal.ZERO;
 
             //calculating current rate depending on base rate and booleans
             if (Boolean.TRUE.equals(modelsLoanOfferDTO.getIsInsuranceEnabled())) {
-                modelsLoanOfferDTO.setRate(modelsLoanOfferDTO.getRate().subtract(BigDecimal.valueOf(1)));
-                paymentForInsurance = 100000;
+                modelsLoanOfferDTO.setRate(modelsLoanOfferDTO.getRate().subtract(BigDecimal.ONE));
+                paymentForInsurance = INSURANCE_COST;
             }
             if (Boolean.TRUE.equals(modelsLoanOfferDTO.getIsSalaryClient()))
                 modelsLoanOfferDTO.setRate(modelsLoanOfferDTO.getRate().subtract(BigDecimal.valueOf(3)));
@@ -78,7 +88,7 @@ public class CreditCalculationService {
             //calculating total credit amount
             modelsLoanOfferDTO.setTotalAmount(modelsLoanOfferDTO.getMonthlyPayment()
                     .multiply(BigDecimal.valueOf(modelsLoanOfferDTO.getTerm()), MathContext.DECIMAL64)
-                    .add(BigDecimal.valueOf(paymentForInsurance)));
+                    .add(paymentForInsurance));
         }
         if (log.isTraceEnabled()) log.trace("Generated offers: {}, {}, {}, {}",
                 resultList.get(0).toString(),
@@ -116,7 +126,8 @@ public class CreditCalculationService {
         BigDecimal monthlyPayment = this.calculateMonthlyPayment(creditAmount, creditRate, creditTerm);
         // график ежемесячных платежей (List<PaymentScheduleElement>)
         List<ModelsPaymentScheduleElementDTO> paymentSchedule = this.calculateMonthlyPaymentsSchedule(
-                creditAmount, creditTerm, creditRate.divide(BigDecimal.valueOf(1200), MathContext.DECIMAL64), monthlyPayment);
+                creditAmount, creditTerm,
+                creditRate.divide(MONTHS_IN_YEAR.multiply(HUNDRED_PERCENTS), MathContext.DECIMAL64), monthlyPayment);
         BigDecimal psk = this.calculatePSK(paymentSchedule, creditAmount);
 
         credit.setMonthlyPayment(monthlyPayment);
@@ -146,13 +157,13 @@ public class CreditCalculationService {
         // s0 - credit amount
         // n - credit term in years
         log.info("Calculating PSK with simplified formula.");
-        BigDecimal creditTermYears = BigDecimal.valueOf(creditTermMonths).divide(BigDecimal.valueOf(12), MathContext.DECIMAL64);
+        BigDecimal creditTermYears = BigDecimal.valueOf(creditTermMonths).divide(MONTHS_IN_YEAR, MathContext.DECIMAL64);
 
         BigDecimal overpayCoefficient = totalPayments.divide(creditAmount, MathContext.DECIMAL64).subtract(BigDecimal.ONE);
         BigDecimal partialResult = overpayCoefficient
                 .divide(creditTermYears, MathContext.DECIMAL64);
 
-        return partialResult.multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP);
+        return partialResult.multiply(HUNDRED_PERCENTS).setScale(2, RoundingMode.HALF_UP);
     }
 
     /**
@@ -187,8 +198,8 @@ public class CreditCalculationService {
         //calculating total payments amount (including getting of the loan itself)
         int paymentsNumber = payments.size();
 
-        int basePeriod = 30;
-        long basePeriodNumberInYear = Math.round(365.0 / basePeriod);
+
+        long basePeriodNumberInYear = Math.round(DAYS_IN_YEAR / BASE_PERIOD);
 
         //pre-calculation of days number from loan obtaining date to given payment date.
         List<Long> daysFromLoanObtained = new ArrayList<>();
@@ -201,13 +212,13 @@ public class CreditCalculationService {
         List<Long> qk = new ArrayList<>();
 
         for (int k = 0; k < paymentsNumber; k++) {
-            //e[k] = (daysFromLoanObtained[k] % basePeriod) / basePeriod
+            //e[k] = (daysFromLoanObtained[k] % BASE_PERIOD) / BASE_PERIOD
             ek.add((BigDecimal.valueOf(daysFromLoanObtained.get(k))
-                    .remainder(BigDecimal.valueOf(basePeriod)))
-                    .divide(BigDecimal.valueOf(basePeriod), MathContext.DECIMAL64));
+                    .remainder(BigDecimal.valueOf(BASE_PERIOD)))
+                    .divide(BigDecimal.valueOf(BASE_PERIOD), MathContext.DECIMAL64));
 
-            //q[k] = Math.floor(daysFromLoanObtained[k] / basePeriod)
-            qk.add(daysFromLoanObtained.get(k) / basePeriod);
+            //q[k] = Math.floor(daysFromLoanObtained[k] / BASE_PERIOD)
+            qk.add(daysFromLoanObtained.get(k) / BASE_PERIOD);
         }
 
         //calculation of 'i' coefficient (base period percent rate, whatever it means).
@@ -222,7 +233,7 @@ public class CreditCalculationService {
              */
             BigDecimal calculateNewIValue(BigDecimal stepSize, BigDecimal i) {
                 BigDecimal zeroSum = BigDecimal.ONE;
-                int iterationLimit = 10000;
+                int iterationLimit = PSK_ITERATION_LIMIT;
 
                 while (zeroSum.compareTo(BigDecimal.ZERO) > 0) {
                     --iterationLimit;
@@ -248,14 +259,13 @@ public class CreditCalculationService {
         }
 
         BigDecimal i = BigDecimal.ZERO;
-        BigDecimal iPrev = BigDecimal.valueOf(1000);
-        BigDecimal stepSize = BigDecimal.valueOf(0.01);
-        BigDecimal resultTolerance = BigDecimal.valueOf(0.0001);
+        BigDecimal iPrev = BigDecimal.valueOf(1000); //any value that not equal to i
+        BigDecimal stepSize = PSK_INITIAL_STEP_SIZE;
 
         //performing calculations of 'i' value with a successive increase in accuracy.
         //assuming that calculated value of 'i' is accurate enough when difference between new calculated 'i' and
         //it's previous value is less than required result tolerance (defined by resultTolerance variable).
-        while (i.subtract(iPrev).abs().compareTo(resultTolerance) > 0) {
+        while (i.subtract(iPrev).abs().compareTo(PSK_RESULT_TOLERANCE) > 0) {
             iPrev = i;
             stepSize = stepSize.divide(BigDecimal.TEN, MathContext.DECIMAL64);
             i = new ICalculator().calculateNewIValue(stepSize, i);
@@ -263,7 +273,7 @@ public class CreditCalculationService {
 
         //finally, calculating requested PSK.
         return i.multiply(BigDecimal.valueOf(basePeriodNumberInYear))
-                .multiply(BigDecimal.valueOf(100))
+                .multiply(HUNDRED_PERCENTS)
                 .setScale(2, RoundingMode.HALF_UP);
     }
 
@@ -279,8 +289,7 @@ public class CreditCalculationService {
         return paymentSchedule.stream()
                 .map(ModelsPaymentScheduleElementDTO::getTotalPayment)
                 .filter(payment -> payment.compareTo(BigDecimal.ZERO) > 0)
-                .reduce(BigDecimal.valueOf(0),
-                        BigDecimal::add);
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     /**
@@ -372,15 +381,15 @@ public class CreditCalculationService {
                 creditAmount, yearlyCreditRate, creditTerm);
 
         //calculating monthlyCreditRate
-        BigDecimal monthlyCreditRate = yearlyCreditRate.divide(BigDecimal.valueOf(1200), MathContext.DECIMAL64);
+        BigDecimal monthlyCreditRate = yearlyCreditRate.divide(MONTHS_IN_YEAR.multiply(HUNDRED_PERCENTS), MathContext.DECIMAL64);
 
         // Для простоты восприятия принимаем overpayCoefficient = (1 + monthlyCreditRate)^creditTerm,
-        BigDecimal overpayCoefficient = monthlyCreditRate.add(BigDecimal.valueOf(1), MathContext.DECIMAL64)
+        BigDecimal overpayCoefficient = monthlyCreditRate.add(BigDecimal.ONE, MathContext.DECIMAL64)
                 .pow(creditTerm, MathContext.DECIMAL64);
 
         // Также принимаем partialResult = monthlyCreditRate/(overpayCoefficient - 1)
         BigDecimal partialResult = monthlyCreditRate
-                .divide(overpayCoefficient.subtract(BigDecimal.valueOf(1), MathContext.DECIMAL64),
+                .divide(overpayCoefficient.subtract(BigDecimal.ONE, MathContext.DECIMAL64),
                         MathContext.DECIMAL64);
 
         // Тогда monthlyPayment = creditAmount*(monthlyCreditRate+partialResult)
