@@ -1,5 +1,6 @@
 package ru.leonov.conveyor.service;
 
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -62,44 +63,28 @@ public class PreScoringService {
 
         if (log.isTraceEnabled()) log.trace("Validating loan request...");
 
-        parametersNullCheck(loanRequest);
+        try {
+            // First and last name - from 2 to 30 english letters, not null.
+            // Middle name - from 2 to 30 english letters, nullable.
+            validateName(loanRequest.getFirstName());
+            validateName(loanRequest.getLastName());
+            if (loanRequest.getMiddleName() != null)
+                validateName(loanRequest.getMiddleName());
 
-        // First and last name - from 2 to 30 english letters, not null.
-        // Middle name - from 2 to 30 english letters, nullable.
-        validateName(loanRequest.getFirstName());
-        validateName(loanRequest.getLastName());
-        if (loanRequest.getMiddleName() != null)
-            validateName(loanRequest.getMiddleName());
-
-        validateCreditAmount(loanRequest.getAmount());
-        validateCreditTerm(loanRequest.getTerm());
-        validateCustomerAge(loanRequest.getBirthdate());
-        validateEmail(loanRequest.getEmail());
-        validatePassportSeries(loanRequest.getPassportSeries());
-        validatePassportNumber(loanRequest.getPassportNumber());
-
-        if (log.isTraceEnabled()) log.trace("Loan request is valid.");
-    }
-
-    /**
-     * Method performs null-check of {@link ModelsLoanApplicationRequestDTO} required parameters.
-     *
-     * @param loanRequest incoming loan request.
-     * @throws LoanRequestException if one of required parameters is null.
-     */
-    private void parametersNullCheck(ModelsLoanApplicationRequestDTO loanRequest) throws LoanRequestException {
-
-        if (loanRequest.getAmount() == null ||
-                loanRequest.getTerm() == null ||
-                loanRequest.getFirstName() == null ||
-                loanRequest.getLastName() == null ||
-                loanRequest.getEmail() == null ||
-                loanRequest.getBirthdate() == null ||
-                loanRequest.getPassportNumber() == null ||
-                loanRequest.getPassportSeries() == null) {
-            if (log.isDebugEnabled()) log.debug("One of loan request required parameters is null.");
+            validateCreditAmount(loanRequest.getAmount());
+            validateCreditTerm(loanRequest.getTerm());
+            validateCustomerAge(loanRequest.getBirthdate());
+            validateEmail(loanRequest.getEmail());
+            validatePassportSeries(loanRequest.getPassportSeries());
+            validatePassportNumber(loanRequest.getPassportNumber());
+        } catch (NullPointerException e) {
+            // assuming that this exception is thrown by lombok @NotNull annotation and means that some required
+            // parameter is missing in request
+            log.debug(e.getMessage());
             throw new LoanRequestException(LoanRequestException.ExceptionCause.EMPTY_REQUIRED_PARAMETER);
         }
+
+        if (log.isTraceEnabled()) log.trace("Loan request is valid.");
     }
 
     /**
@@ -109,7 +94,7 @@ public class PreScoringService {
      * @param name {@link String} to check.
      * @throws LoanRequestException if name is not valid.
      */
-    private void validateName(String name) throws LoanRequestException {
+    private void validateName(@NonNull String name) throws LoanRequestException {
 
         if (!name.matches("[a-zA-Z]{2,30}")) {
             if (log.isDebugEnabled()) log.debug("One of 'name' fields is not valid: {}.", name);
@@ -123,7 +108,7 @@ public class PreScoringService {
      * @param requestedAmount requested credit amount.
      * @throws LoanRequestException if requested credit amount is less than 10000.
      */
-    private void validateCreditAmount(BigDecimal requestedAmount) throws LoanRequestException {
+    private void validateCreditAmount(@NonNull BigDecimal requestedAmount) throws LoanRequestException {
         if (requestedAmount.compareTo(MIN_CREDIT_AMOUNT) < 0) {
             if (log.isDebugEnabled())
                 log.debug(LoanRequestException.ExceptionCause.INCORRECT_CREDIT_AMOUNT.getUserFriendlyMessage());
@@ -138,7 +123,7 @@ public class PreScoringService {
      * @param creditTerm term of requested credit.
      * @throws LoanRequestException if term of requested credit is less than 6 months.
      */
-    private void validateCreditTerm(Integer creditTerm) throws LoanRequestException {
+    private void validateCreditTerm(@NonNull Integer creditTerm) throws LoanRequestException {
         if (creditTerm < MIN_CREDIT_TERM) {
             if (log.isDebugEnabled())
                 log.debug(LoanRequestException.ExceptionCause.INCORRECT_CREDIT_TERM.getUserFriendlyMessage());
@@ -153,7 +138,7 @@ public class PreScoringService {
      * @param birthday customers birth-date.
      * @throws LoanRequestException if customer is younger than 18 years.
      */
-    private void validateCustomerAge(LocalDate birthday) throws LoanRequestException {
+    private void validateCustomerAge(@NonNull LocalDate birthday) throws LoanRequestException {
         Period period = Period.between(birthday, LocalDate.now());
         if (period.getYears() < MIN_AGE) {
             if (log.isDebugEnabled())
@@ -169,7 +154,7 @@ public class PreScoringService {
      * @param email customers e-mail.
      * @throws LoanRequestException if e-mail not match required pattern.
      */
-    private void validateEmail(String email) throws LoanRequestException {
+    private void validateEmail(@NonNull String email) throws LoanRequestException {
         if (!email.matches("[\\w\\.]{2,50}@[\\w\\.]{2,20}")) {
 
             if (log.isDebugEnabled())
@@ -184,7 +169,7 @@ public class PreScoringService {
      * @param series customers passport series.
      * @throws LoanRequestException if passport series not match required pattern.
      */
-    private void validatePassportSeries(String series) throws LoanRequestException {
+    private void validatePassportSeries(@NonNull String series) throws LoanRequestException {
         if (!series.matches("[\\d]{4}")) {
             if (log.isDebugEnabled())
                 log.debug(LoanRequestException.ExceptionCause.INCORRECT_PASSPORT_SERIES.getUserFriendlyMessage());
@@ -198,7 +183,7 @@ public class PreScoringService {
      * @param number customers passport number.
      * @throws LoanRequestException if passport number not match required pattern.
      */
-    private void validatePassportNumber(String number) throws LoanRequestException {
+    private void validatePassportNumber(@NonNull String number) throws LoanRequestException {
         if (!number.matches("[\\d]{6}")) {
             if (log.isDebugEnabled())
                 log.debug(LoanRequestException.ExceptionCause.INCORRECT_PASSPORT_NUMBER.getUserFriendlyMessage());
