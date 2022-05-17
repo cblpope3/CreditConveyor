@@ -20,14 +20,14 @@ import java.util.List;
 
 @RestController
 @SuppressWarnings("unused")
-public class Conveyor implements DefaultApi {
+public class ConveyorController implements ConveyorApi {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final PreScoringService preScoringService;
     private final ScoringService scoringService;
 
     @Autowired
-    public Conveyor(PreScoringService preScoringService, ScoringService scoringService) {
+    public ConveyorController(PreScoringService preScoringService, ScoringService scoringService) {
         this.preScoringService = preScoringService;
         this.scoringService = scoringService;
     }

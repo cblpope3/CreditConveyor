@@ -27,9 +27,9 @@ components:
         Пример запроса кредитования:
           amount: 150000
           term: 30
-          firstName: Василий
-          lastName: Пупкин
-          middleName: Улукбекович
+          firstName: Vasiliy
+          lastName: Pupkin
+          middleName: Ulukbekovich
           email: ulug_pup@vassya.ru
           birthdate: '2001-08-24'
           passportSeries: '4666'
@@ -218,9 +218,9 @@ components:
         Пример данных для скоринга.:
           amount: 1231123.87
           term: 83648
-          firstName: Василий
-          lastName: Пупкин
-          middleName: Улукбекович
+          firstName: Vasiliy
+          lastName: Pupkin
+          middleName: Ulukbekovich
           gender: Male
           birthdate: '2019-08-24'
           passportSeries: '5838'

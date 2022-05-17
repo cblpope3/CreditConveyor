@@ -14,11 +14,16 @@ info:
   description: Api of neoflex training project.
 servers:
   - url: 'http://localhost:8080'
+tags:
+  - name: Conveyor
+    description: Запросы к кредитному конвейеру
 paths:
   /conveyor/offers:
     post:
       summary: Рассчитать условия кредита
       operationId: post-conveyor-offers
+      tags:
+        - Conveyor
       responses:
         '200':
           description: OK
@@ -29,6 +34,13 @@ paths:
                 items:
                   $ref: '#/components/schemas/Models_LoanOffer'
               examples: {}
+        '400':
+          description: Bad Request
+          headers:
+            cause:
+              schema:
+                type: string
+              description: 'Причина '
       description: Get possible credit offer.
       requestBody:
         content:
@@ -40,9 +52,9 @@ paths:
                 value:
                   amount: 24234.546
                   term: 123
-                  firstName: Василий
-                  lastName: Пупкин
-                  middleName: Улукбекович
+                  firstName: Vasiliy
+                  lastName: Pupkin
+                  middleName: Ulukbekovich
                   email: uluk_poop@vasya.ru
                   birthdate: '2019-08-24'
                   passportSeries: '5378'
@@ -52,6 +64,8 @@ paths:
     post:
       summary: Расчёт параметров кредита
       operationId: post-conveyor-calculation
+      tags:
+        - Conveyor
       responses:
         '200':
           description: OK
@@ -70,9 +84,9 @@ paths:
                 value:
                   amount: 12314.566
                   term: 56456
-                  firstName: Василий
-                  lastName: Пупкин
-                  middleName: Улукбекович
+                  firstName: Vasiliy
+                  lastName: Pupkin
+                  middleName: Ulukbekovich
                   gender: MALE
                   birthdate: '2019-08-24'
                   passportSeries: '2356'
@@ -211,9 +225,9 @@ components:
         Пример запроса кредитования:
           amount: 150000
           term: 30
-          firstName: Василий
-          lastName: Пупкин
-          middleName: Улукбекович
+          firstName: Vasiliy
+          lastName: Pupkin
+          middleName: Ulukbekovich
           email: ulug_pup@vassya.ru
           birthdate: '2001-08-24'
           passportSeries: '4666'
@@ -352,9 +366,9 @@ components:
         Пример данных для скоринга.:
           amount: 1231123.87
           term: 83648
-          firstName: Василий
-          lastName: Пупкин
-          middleName: Улукбекович
+          firstName: Vasiliy
+          lastName: Pupkin
+          middleName: Ulukbekovich
           gender: Male
           birthdate: '2019-08-24'
           passportSeries: '5838'
