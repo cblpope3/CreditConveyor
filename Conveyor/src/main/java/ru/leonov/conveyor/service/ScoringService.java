@@ -1,7 +1,6 @@
 package ru.leonov.conveyor.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -17,10 +16,9 @@ import java.time.Period;
 /**
  * This service handle scoring process.
  */
+@Slf4j
 @Service
 public class ScoringService {
-
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final double baseRate;
     private final CreditCalculationService creditCalculationService;
@@ -56,7 +54,7 @@ public class ScoringService {
      */
     private double calculateRate(ModelsScoringDataDTO scoringData) throws ScoringException {
 
-        if (logger.isTraceEnabled()) logger.trace("Calculating credit rate. Base rate is {}.", baseRate);
+        if (log.isTraceEnabled()) log.trace("Calculating credit rate. Base rate is {}.", baseRate);
 
         double resultRate = baseRate;
 
@@ -69,7 +67,7 @@ public class ScoringService {
                 scoringData.getEmployment().getWorkExperienceTotal(),
                 scoringData.getEmployment().getWorkExperienceCurrent());
 
-        if (logger.isDebugEnabled()) logger.debug("Credit rate is calculated: {}.", resultRate);
+        if (log.isDebugEnabled()) log.debug("Credit rate is calculated: {}.", resultRate);
 
         return resultRate;
     }
@@ -93,22 +91,22 @@ public class ScoringService {
         } else if (employmentStatus.equals(ModelsEmploymentDTO.EmploymentStatusEnum.SELF_EMPLOYED)) {
             // Самозанятый → ставка увеличивается на 1
             resultCorrection += 1;
-            if (logger.isTraceEnabled()) logger.trace("Credit rate is increased by 1 because self-employed.");
+            if (log.isTraceEnabled()) log.trace("Credit rate is increased by 1 because self-employed.");
         } else if (employmentStatus.equals(ModelsEmploymentDTO.EmploymentStatusEnum.BUSINESS_OWNER)) {
             // Владелец бизнеса → ставка увеличивается на 3
             resultCorrection += 3;
-            if (logger.isTraceEnabled()) logger.trace("Credit rate is increased by 3 because business owner.");
+            if (log.isTraceEnabled()) log.trace("Credit rate is increased by 3 because business owner.");
         }
 
         if (jobPosition.equals(ModelsEmploymentDTO.PositionEnum.MID_MANAGER)) {
             // Менеджер среднего звена → ставка уменьшается на 2
             resultCorrection -= 2;
-            if (logger.isTraceEnabled()) logger.trace("Credit rate is decreased by 2 because mid-manager.");
+            if (log.isTraceEnabled()) log.trace("Credit rate is decreased by 2 because mid-manager.");
 
         } else if (jobPosition.equals(ModelsEmploymentDTO.PositionEnum.TOP_MANAGER)) {
             // Топ-менеджер → ставка уменьшается на 4
             resultCorrection -= 4;
-            if (logger.isTraceEnabled()) logger.trace("Credit rate is decreased by 4 because top-manager.");
+            if (log.isTraceEnabled()) log.trace("Credit rate is decreased by 4 because top-manager.");
         }
 
         return resultCorrection;
@@ -143,19 +141,19 @@ public class ScoringService {
 
         if (maritalStatus.equals(ModelsScoringDataDTO.MaritalStatusEnum.MARRIED)) {
             // Замужем/женат → ставка уменьшается на 3
-            if (logger.isTraceEnabled()) logger.trace("Credit rate is decreased by 3 because married.");
+            if (log.isTraceEnabled()) log.trace("Credit rate is decreased by 3 because married.");
             resultCorrection -= 3;
         } else if (maritalStatus.equals(ModelsScoringDataDTO.MaritalStatusEnum.DIVORCED)) {
             // Разведен → ставка увеличивается на 1
-            if (logger.isTraceEnabled()) logger.trace("Credit rate is increased by 1 because divorced.");
+            if (log.isTraceEnabled()) log.trace("Credit rate is increased by 1 because divorced.");
             resultCorrection += 1;
         }
 
         if (dependentAmount > 1) {
             //Количество иждивенцев больше 1 → ставка увеличивается на 1
             resultCorrection += 1;
-            if (logger.isTraceEnabled())
-                logger.trace("Credit rate is increased by 1 because too much dependent persons.");
+            if (log.isTraceEnabled())
+                log.trace("Credit rate is increased by 1 because too much dependent persons.");
         }
 
         return resultCorrection;
@@ -172,7 +170,7 @@ public class ScoringService {
     private double getAgeRateCorrection(LocalDate birthday, ModelsScoringDataDTO.GenderEnum gender) throws ScoringException {
 
         int age = Period.between(birthday, LocalDate.now()).getYears();
-        if (logger.isTraceEnabled()) logger.trace("Customers birthday is {}. Calculated age: {}.", birthday, age);
+        if (log.isTraceEnabled()) log.trace("Customers birthday is {}. Calculated age: {}.", birthday, age);
 
         // Возраст менее 20 или более 60 лет → отказ
         if (age < 20 || age > 60) {
@@ -182,21 +180,21 @@ public class ScoringService {
         } else if (age >= 30 && age <= 55 && gender.equals(ModelsScoringDataDTO.GenderEnum.MALE)) {
             // Мужчина, возраст от 30 до 55 лет → ставка уменьшается на 3
 
-            if (logger.isTraceEnabled())
-                logger.trace("Credit rate is decreased by 3 because male with fine age.");
+            if (log.isTraceEnabled())
+                log.trace("Credit rate is decreased by 3 because male with fine age.");
             return -3;
 
         } else if (age >= 35 && age <= 55 && gender.equals(ModelsScoringDataDTO.GenderEnum.FEMALE)) {
             // Женщина, возраст от 35 до 60 лет → ставка уменьшается на 3
 
-            if (logger.isTraceEnabled())
-                logger.trace("Credit rate is decreased by 3 because female with fine age.");
+            if (log.isTraceEnabled())
+                log.trace("Credit rate is decreased by 3 because female with fine age.");
             return -3;
 
         } else if (gender.equals(ModelsScoringDataDTO.GenderEnum.NON_BINARY)) {
             // Небинарный → ставка увеличивается на 3
 
-            if (logger.isTraceEnabled()) logger.trace("Credit rate is increased by 3 because non-binary person.");
+            if (log.isTraceEnabled()) log.trace("Credit rate is increased by 3 because non-binary person.");
             return 3;
 
         } else return 0;

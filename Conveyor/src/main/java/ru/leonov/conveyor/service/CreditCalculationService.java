@@ -1,5 +1,6 @@
 package ru.leonov.conveyor.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.leonov.conveyor.dto.ModelsCreditDTO;
 import ru.leonov.conveyor.dto.ModelsLoanOfferDTO;
@@ -17,6 +18,7 @@ import java.util.Random;
 /**
  * This service handle credit math calculations.
  */
+@Slf4j
 @Service
 public class CreditCalculationService {
 
@@ -33,6 +35,7 @@ public class CreditCalculationService {
     public List<ModelsLoanOfferDTO> generateCreditOffers(BigDecimal creditAmount, int creditTerm,
                                                          BigDecimal baseRate) {
 
+        log.trace("Generating credit pre-offer list...");
         ArrayList<ModelsLoanOfferDTO> resultList = new ArrayList<>(4);
 
         //generating result list with initial parameters
@@ -77,7 +80,11 @@ public class CreditCalculationService {
                     .multiply(BigDecimal.valueOf(modelsLoanOfferDTO.getTerm()), MathContext.DECIMAL64)
                     .add(BigDecimal.valueOf(paymentForInsurance)));
         }
-
+        if (log.isTraceEnabled()) log.trace("Generated offers: {}, {}, {}, {}",
+                resultList.get(0).toString(),
+                resultList.get(1).toString(),
+                resultList.get(2).toString(),
+                resultList.get(3).toString());
         return resultList;
     }
 
@@ -93,6 +100,9 @@ public class CreditCalculationService {
      */
     public ModelsCreditDTO calculateCredit(BigDecimal creditAmount, BigDecimal creditRate, int creditTerm,
                                            boolean isInsuranceEnabled, boolean isSalaryClient) {
+
+        if (log.isTraceEnabled()) log.trace("Generating {} roubles {}% credit for {} months.",
+                creditAmount, creditRate, creditRate);
 
         ModelsCreditDTO credit = new ModelsCreditDTO();
 
@@ -112,6 +122,8 @@ public class CreditCalculationService {
         credit.setMonthlyPayment(monthlyPayment);
         credit.setPaymentSchedule(paymentSchedule);
         credit.setPsk(psk);
+
+        if (log.isTraceEnabled()) log.trace("Credit generated: {}", credit);
 
         return credit;
     }
@@ -133,7 +145,7 @@ public class CreditCalculationService {
         // s - total payments sum
         // s0 - credit amount
         // n - credit term in years
-
+        log.info("Calculating PSK with simplified formula.");
         BigDecimal creditTermYears = BigDecimal.valueOf(creditTermMonths).divide(BigDecimal.valueOf(12), MathContext.DECIMAL64);
 
         BigDecimal overpayCoefficient = totalPayments.divide(creditAmount, MathContext.DECIMAL64).subtract(BigDecimal.ONE);
@@ -153,6 +165,8 @@ public class CreditCalculationService {
      */
     private BigDecimal calculatePSK(List<ModelsPaymentScheduleElementDTO> paymentSchedule,
                                     BigDecimal creditAmount) {
+
+        log.trace("Calculating PSK.");
 
         //making dates of payment collection
         //first element is day of receipt of the loan, assuming that this is one month before first payment date.
@@ -224,6 +238,7 @@ public class CreditCalculationService {
                     }
 
                     if (iterationLimit < 0) {
+                        log.error("PSK calculation error. Iteration limit reached.");
                         throw new ArithmeticException("Can't calculate PSK: iteration limit reached!");
                     }
                 }
@@ -353,6 +368,9 @@ public class CreditCalculationService {
         // monthlyCreditRate — ставка процента за один месяц
         // creditTerm — срок кредитования.
 
+        if (log.isTraceEnabled()) log.trace("Calculating monthly payment for {} roubles {}% credit for {} months.",
+                creditAmount, yearlyCreditRate, creditTerm);
+
         //calculating monthlyCreditRate
         BigDecimal monthlyCreditRate = yearlyCreditRate.divide(BigDecimal.valueOf(1200), MathContext.DECIMAL64);
 
@@ -366,8 +384,12 @@ public class CreditCalculationService {
                         MathContext.DECIMAL64);
 
         // Тогда monthlyPayment = creditAmount*(monthlyCreditRate+partialResult)
-        return creditAmount.multiply(
+        BigDecimal monthlyPayment = creditAmount.multiply(
                         monthlyCreditRate.add(partialResult, MathContext.DECIMAL64), MathContext.DECIMAL64)
                 .setScale(2, RoundingMode.HALF_UP);
+
+        if (log.isTraceEnabled()) log.trace("Calculated monthly payment is {} roubles.", monthlyPayment);
+
+        return monthlyPayment;
     }
 }

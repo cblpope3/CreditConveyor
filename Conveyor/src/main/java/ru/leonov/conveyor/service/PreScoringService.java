@@ -1,7 +1,6 @@
 package ru.leonov.conveyor.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -17,10 +16,9 @@ import java.util.List;
 /**
  * Service that perform pre-scoring job.
  */
+@Slf4j
 @Service
 public class PreScoringService {
-
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final CreditCalculationService creditCalculationService;
     private final double baseRate;
@@ -58,7 +56,7 @@ public class PreScoringService {
      */
     private void validateLoanApplicationRequestDTO(ModelsLoanApplicationRequestDTO loanRequest) throws LoanRequestException {
 
-        if (logger.isTraceEnabled()) logger.trace("Validating loan request...");
+        if (log.isTraceEnabled()) log.trace("Validating loan request...");
 
         this.parametersNullCheck(loanRequest);
 
@@ -76,7 +74,7 @@ public class PreScoringService {
         this.validatePassportSeries(loanRequest.getPassportSeries());
         this.validatePassportNumber(loanRequest.getPassportNumber());
 
-        if (logger.isTraceEnabled()) logger.trace("Loan request is valid.");
+        if (log.isTraceEnabled()) log.trace("Loan request is valid.");
     }
 
     /**
@@ -95,7 +93,7 @@ public class PreScoringService {
                 loanRequest.getBirthdate() == null ||
                 loanRequest.getPassportNumber() == null ||
                 loanRequest.getPassportSeries() == null) {
-            if (logger.isDebugEnabled()) logger.debug("One of loan request required parameters is null.");
+            if (log.isDebugEnabled()) log.debug("One of loan request required parameters is null.");
             throw new LoanRequestException(LoanRequestException.ExceptionCause.EMPTY_REQUIRED_PARAMETER);
         }
     }
@@ -110,7 +108,7 @@ public class PreScoringService {
     private void validateName(String name) throws LoanRequestException {
 
         if (!name.matches("[a-zA-Z]{2,30}")) {
-            if (logger.isDebugEnabled()) logger.debug("One of 'name' fields is not valid: {}.", name);
+            if (log.isDebugEnabled()) log.debug("One of 'name' fields is not valid: {}.", name);
             throw new LoanRequestException(LoanRequestException.ExceptionCause.INCORRECT_NAME, name);
         }
     }
@@ -126,7 +124,7 @@ public class PreScoringService {
             LoanRequestException exception = new LoanRequestException(
                     LoanRequestException.ExceptionCause.INCORRECT_CREDIT_AMOUNT,
                     requestedAmount.toString());
-            if (logger.isDebugEnabled()) logger.debug(exception.getMessage());
+            if (log.isDebugEnabled()) log.debug(exception.getMessage());
             throw exception;
         }
     }
@@ -142,7 +140,7 @@ public class PreScoringService {
             LoanRequestException exception = new LoanRequestException(
                     LoanRequestException.ExceptionCause.INCORRECT_CREDIT_TERM,
                     creditTerm.toString());
-            if (logger.isDebugEnabled()) logger.debug(exception.getMessage());
+            if (log.isDebugEnabled()) log.debug(exception.getMessage());
             throw exception;
         }
     }
@@ -159,7 +157,7 @@ public class PreScoringService {
             LoanRequestException exception = new LoanRequestException(
                     LoanRequestException.ExceptionCause.PERSON_TOO_YOUNG,
                     String.valueOf(period.getYears()));
-            if (logger.isDebugEnabled()) logger.debug(exception.getMessage());
+            if (log.isDebugEnabled()) log.debug(exception.getMessage());
             throw exception;
         }
     }
@@ -176,7 +174,7 @@ public class PreScoringService {
                     LoanRequestException.ExceptionCause.INCORRECT_EMAIL,
                     email);
 
-            if (logger.isDebugEnabled()) logger.debug(exception.getMessage());
+            if (log.isDebugEnabled()) log.debug(exception.getMessage());
             throw exception;
         }
     }
@@ -192,7 +190,7 @@ public class PreScoringService {
             LoanRequestException exception = new LoanRequestException(
                     LoanRequestException.ExceptionCause.INCORRECT_PASSPORT_SERIES,
                     series);
-            if (logger.isDebugEnabled()) logger.debug(exception.getMessage());
+            if (log.isDebugEnabled()) log.debug(exception.getMessage());
             throw exception;
         }
     }
@@ -208,7 +206,7 @@ public class PreScoringService {
             LoanRequestException exception = new LoanRequestException(
                     LoanRequestException.ExceptionCause.INCORRECT_PASSPORT_NUMBER,
                     number);
-            if (logger.isDebugEnabled()) logger.debug(exception.getMessage());
+            if (log.isDebugEnabled()) log.debug(exception.getMessage());
             throw exception;
         }
     }

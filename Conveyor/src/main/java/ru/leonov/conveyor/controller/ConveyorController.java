@@ -1,8 +1,7 @@
 package ru.leonov.conveyor.controller;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,19 +17,14 @@ import ru.leonov.conveyor.service.ScoringService;
 
 import java.util.List;
 
+@Slf4j
+@RequiredArgsConstructor
 @RestController
 @SuppressWarnings("unused")
 public class ConveyorController implements ConveyorApi {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final PreScoringService preScoringService;
     private final ScoringService scoringService;
-
-    @Autowired
-    public ConveyorController(PreScoringService preScoringService, ScoringService scoringService) {
-        this.preScoringService = preScoringService;
-        this.scoringService = scoringService;
-    }
 
     /**
      * {@inheritDoc}
@@ -38,14 +32,14 @@ public class ConveyorController implements ConveyorApi {
     @Override
     public ResponseEntity<ModelsCreditDTO> postConveyorCalculation(ModelsScoringDataDTO modelsScoringDataDTO) {
 
-        if (logger.isTraceEnabled()) logger.trace("Got /conveyor/calculation request.");
+        if (log.isTraceEnabled()) log.trace("Got /conveyor/calculation request.");
 
         try {
             ModelsCreditDTO credit = scoringService.calculateCredit(modelsScoringDataDTO);
-            if (logger.isDebugEnabled()) logger.debug("Credit calculated, returning response.");
+            if (log.isDebugEnabled()) log.debug("Credit calculated, returning response.");
             return new ResponseEntity<>(credit, HttpStatus.OK);
         } catch (ScoringException e) {
-            if (logger.isDebugEnabled()) logger.debug("Credit denied. Reason: {}", e.getMessage());
+            if (log.isDebugEnabled()) log.debug("Credit denied. Reason: {}", e.getMessage());
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
     }
@@ -55,14 +49,14 @@ public class ConveyorController implements ConveyorApi {
      */
     @Override
     public ResponseEntity<List<ModelsLoanOfferDTO>> postConveyorOffers(ModelsLoanApplicationRequestDTO modelsLoanApplicationRequestDTO) {
-        if (logger.isTraceEnabled()) logger.trace("got post conveyor offers request");
+        if (log.isTraceEnabled()) log.trace("got post conveyor offers request");
 
         try {
             List<ModelsLoanOfferDTO> possibleCreditOffers = preScoringService.getCreditOfferList(modelsLoanApplicationRequestDTO);
-            if (logger.isDebugEnabled()) logger.debug("Returning response to request.");
+            if (log.isDebugEnabled()) log.debug("Returning response to request.");
             return new ResponseEntity<>(possibleCreditOffers, HttpStatus.OK);
         } catch (LoanRequestException e) {
-            if (logger.isWarnEnabled()) logger.warn("Request not valid: {}", e.getMessage());
+            if (log.isWarnEnabled()) log.warn("Request not valid: {}", e.getMessage());
             HttpHeaders headers = new HttpHeaders();
             headers.add("cause", e.getMessage());
             return new ResponseEntity<>(headers, HttpStatus.BAD_REQUEST);
