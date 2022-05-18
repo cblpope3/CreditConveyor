@@ -8,9 +8,7 @@ import ru.leonov.conveyor.dto.ModelsLoanOfferDTO;
 import ru.leonov.conveyor.test_data.LoanOfferTestData;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -34,13 +32,6 @@ class CreditOfferCalculationTest {
                 LoanOfferTestData.getFineLoanOfferRequest().getAmount(),
                 LoanOfferTestData.getFineLoanOfferRequest().getTerm(),
                 baseRate);
-
-        System.out.println(generatedOffers.stream()
-                .map(offer ->
-                        offer.getTotalAmount().setScale(2, RoundingMode.HALF_UP)
-                )
-                .collect(Collectors.toList()));
-
 
         //checking that response is correct
         assertThat(generatedOffers)
