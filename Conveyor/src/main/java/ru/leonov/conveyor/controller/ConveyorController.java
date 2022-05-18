@@ -6,10 +6,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
-import ru.leonov.conveyor.dto.ModelsCreditDTO;
-import ru.leonov.conveyor.dto.ModelsLoanApplicationRequestDTO;
-import ru.leonov.conveyor.dto.ModelsLoanOfferDTO;
-import ru.leonov.conveyor.dto.ModelsScoringDataDTO;
+import ru.leonov.conveyor.dto.CreditDTO;
+import ru.leonov.conveyor.dto.LoanApplicationRequestDTO;
+import ru.leonov.conveyor.dto.LoanOfferDTO;
+import ru.leonov.conveyor.dto.ScoringDataDTO;
 import ru.leonov.conveyor.exceptions.LoanRequestException;
 import ru.leonov.conveyor.exceptions.ScoringException;
 import ru.leonov.conveyor.service.PreScoringService;
@@ -30,12 +30,12 @@ public class ConveyorController implements ConveyorApi {
      * {@inheritDoc}
      */
     @Override
-    public ResponseEntity<ModelsCreditDTO> postConveyorCalculation(ModelsScoringDataDTO modelsScoringDataDTO) {
+    public ResponseEntity<CreditDTO> postConveyorCalculation(ScoringDataDTO scoringDataDTO) {
 
         if (log.isTraceEnabled()) log.trace("Got /conveyor/calculation request.");
 
         try {
-            ModelsCreditDTO credit = scoringService.calculateCredit(modelsScoringDataDTO);
+            CreditDTO credit = scoringService.calculateCredit(scoringDataDTO);
             if (log.isDebugEnabled()) log.debug("Credit calculated, returning response.");
             return new ResponseEntity<>(credit, HttpStatus.OK);
         } catch (ScoringException e) {
@@ -48,11 +48,11 @@ public class ConveyorController implements ConveyorApi {
      * {@inheritDoc}
      */
     @Override
-    public ResponseEntity<List<ModelsLoanOfferDTO>> postConveyorOffers(ModelsLoanApplicationRequestDTO modelsLoanApplicationRequestDTO) {
+    public ResponseEntity<List<LoanOfferDTO>> postConveyorOffers(LoanApplicationRequestDTO loanApplicationRequestDTO) {
         if (log.isTraceEnabled()) log.trace("got post conveyor offers request");
 
         try {
-            List<ModelsLoanOfferDTO> possibleCreditOffers = preScoringService.getCreditOfferList(modelsLoanApplicationRequestDTO);
+            List<LoanOfferDTO> possibleCreditOffers = preScoringService.getCreditOfferList(loanApplicationRequestDTO);
             if (log.isDebugEnabled()) log.debug("Returning response to request.");
             return new ResponseEntity<>(possibleCreditOffers, HttpStatus.OK);
         } catch (LoanRequestException e) {

@@ -4,7 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import ru.leonov.conveyor.dto.ModelsLoanOfferDTO;
+import ru.leonov.conveyor.dto.LoanOfferDTO;
 import ru.leonov.conveyor.test_data.LoanOfferTestData;
 
 import java.math.BigDecimal;
@@ -28,7 +28,7 @@ class CreditOfferCalculationTest {
     @Test
     void generateCreditOffers() {
         //simulating service method call
-        List<ModelsLoanOfferDTO> generatedOffers = creditCalculationService.generateCreditOffers(
+        List<LoanOfferDTO> generatedOffers = creditCalculationService.generateCreditOffers(
                 LoanOfferTestData.getFineLoanOfferRequest().getAmount(),
                 LoanOfferTestData.getFineLoanOfferRequest().getTerm(),
                 baseRate);
@@ -43,7 +43,7 @@ class CreditOfferCalculationTest {
         assertTrue(compareLoanOffers(generatedOffers.get(3), LoanOfferTestData.getFineLoanOfferResponse().get(3)));
     }
 
-    private boolean compareLoanOffers(ModelsLoanOfferDTO offer1, ModelsLoanOfferDTO offer2) {
+    private boolean compareLoanOffers(LoanOfferDTO offer1, LoanOfferDTO offer2) {
         //since applicationId field is randomly generated, we ignore this field in the assertion
         return
                 offer1.getRequestedAmount().compareTo(offer2.getRequestedAmount()) == 0 &&

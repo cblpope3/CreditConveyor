@@ -32,7 +32,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Models_LoanOffer'
+                  $ref: '#/components/schemas/LoanOffer'
               examples: {}
         '400':
           description: Bad Request
@@ -46,7 +46,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Models_LoanApplicationRequest'
+              $ref: '#/components/schemas/LoanApplicationRequest'
             examples:
               Пример запроса кредитования.:
                 value:
@@ -55,7 +55,7 @@ paths:
                   firstName: Vasiliy
                   lastName: Pupkin
                   middleName: Ulukbekovich
-                  email: uluk_poop@vasya.ru
+                  email: ulukpoop@vasya.ru
                   birthdate: '2019-08-24'
                   passportSeries: '5378'
                   passportNumber: '345345'
@@ -72,13 +72,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Models_Credit'
+                $ref: '#/components/schemas/Credit'
       description: 'Проверка присланных данных, скоринг данных, полный расчёт параметров кредита.'
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Models_ScoringData'
+              $ref: '#/components/schemas/ScoringData'
             examples:
               Пример запроса параметров кредита:
                 value:
@@ -108,114 +108,7 @@ paths:
         description: Данные для расчёта кредита.
 components:
   schemas:
-    Models_Credit:
-      type: object
-      x-examples:
-        Пример данных о кредите.:
-          amount: 12345.67
-          term: 12345
-          monthlyPayment: 6789.01
-          rate: 6.9
-          psk: 1234.67
-          isInsuranceEnabled: false
-          isSalaryClient: true
-          paymentSchedule:
-            - number: 353
-              date: '2019-08-24'
-              totalPayment: 23424.88
-              interestPayment: 234234.7
-              debtPayment: 5353.5
-              remainingDebt: 24324.46
-      properties:
-        amount:
-          type: number
-          description: Сумма кредита.
-        term:
-          type: integer
-          format: int32
-          description: Срок кредита.
-        monthlyPayment:
-          type: number
-          description: Ежемесячный платёж.
-        rate:
-          type: number
-          description: Ставка по кредиту.
-        psk:
-          type: number
-          description: Полная стоимость кредита.
-        isInsuranceEnabled:
-          type: boolean
-          description: Есть ли страховка?
-        isSalaryClient:
-          type: boolean
-          description: Является ли зарплатным клиентом?
-        paymentSchedule:
-          type: array
-          description: Расписание платежей по кредиту.
-          items:
-            $ref: '#/components/schemas/Models_PaymentScheduleElement'
-      required:
-        - amount
-        - term
-        - monthlyPayment
-        - rate
-        - psk
-        - isInsuranceEnabled
-        - isSalaryClient
-        - paymentSchedule
-      title: Credit
-      description: Данные о кредите.
-    Models_Employment:
-      type: object
-      x-examples:
-        Пример статуса работника:
-          employmentStatus: EMPLOYED
-          employerINN: '49993302030'
-          salary: 44000.33
-          position: WORKER
-          workExperienceTotal: 5343
-          workExperienceCurrent: 10345
-      title: Employment
-      description: Статус работника.
-      properties:
-        employmentStatus:
-          type: string
-          enum:
-            - EMPLOYED
-            - UNEMPLOYED
-            - SELF_EMPLOYED
-            - BUSINESS_OWNER
-          description: Статус трудоустройства.
-        employerINN:
-          type: string
-          description: ИНН работника.
-        salary:
-          type: number
-          description: Зарплата.
-        position:
-          type: string
-          enum:
-            - WORKER
-            - MID_MANAGER
-            - TOP_MANAGER
-            - OWNER
-          description: Должность.
-        workExperienceTotal:
-          type: integer
-          format: int32
-          description: Общий трудовой стаж.
-        workExperienceCurrent:
-          type: integer
-          format: int32
-          description: Трудовой стаж на текущем рабочем месте.
-      required:
-        - employmentStatus
-        - employerINN
-        - salary
-        - position
-        - workExperienceTotal
-        - workExperienceCurrent
-    Models_LoanApplicationRequest:
+    LoanApplicationRequest:
       title: LoanApplicationRequest
       x-stoplight:
         id: 3xqowdfx0gpkr
@@ -236,31 +129,62 @@ components:
         amount:
           type: number
           description: Сумма займа.
+          minimum: 10000
+          example: 643445.43
         term:
           type: integer
           description: Срок займа.
+          minimum: 6
+          exclusiveMinimum: true
+          example: 42
         firstName:
           type: string
           description: Имя.
+          pattern: '[a-zA-Z]'
+          minLength: 2
+          maxLength: 30
+          example: Vasiliy
         lastName:
           type: string
           description: Фамилия.
+          pattern: '[a-zA-Z]'
+          minLength: 2
+          maxLength: 30
+          example: Pupkin
         middleName:
           type: string
           description: Отчество.
+          pattern: '[a-zA-Z]'
+          example: Ulukbekovich
+          minLength: 2
+          maxLength: 30
         email:
           type: string
           description: Электронная почта.
+          pattern: '[\w\.]{2,50}@[\w\.]'
+          minLength: 7
+          maxLength: 80
+          format: email
+          example: vasyapoop@ulukbek.ru
         birthdate:
           type: string
           format: date
           description: Дата рождения.
+          example: '1998-04-28'
         passportSeries:
           type: string
           description: Серия паспорта.
+          pattern: '[\d]'
+          minLength: 4
+          maxLength: 4
+          example: '2467'
         passportNumber:
           type: string
           description: Номер паспорта.
+          pattern: '[\d]'
+          minLength: 6
+          maxLength: 6
+          example: '567321'
       required:
         - amount
         - term
@@ -270,7 +194,7 @@ components:
         - birthdate
         - passportSeries
         - passportNumber
-    Models_LoanOffer:
+    LoanOffer:
       type: object
       x-examples:
         Пример предложения по кредиту.:
@@ -320,7 +244,7 @@ components:
         - rate
         - isInsuranceEnabled
         - isSalaryClient
-    Models_PaymentScheduleElement:
+    PaymentScheduleElement:
       type: object
       x-examples:
         Пример платежа по кредиту.:
@@ -360,7 +284,57 @@ components:
         - interestPayment
         - debtPayment
         - remainingDebt
-    Models_ScoringData:
+    Employment:
+      type: object
+      x-examples:
+        Пример статуса работника:
+          employmentStatus: EMPLOYED
+          employerINN: '49993302030'
+          salary: 44000.33
+          position: WORKER
+          workExperienceTotal: 5343
+          workExperienceCurrent: 10345
+      title: Employment
+      description: Статус работника.
+      properties:
+        employmentStatus:
+          type: string
+          enum:
+            - EMPLOYED
+            - UNEMPLOYED
+            - SELF_EMPLOYED
+            - BUSINESS_OWNER
+          description: Статус трудоустройства.
+        employerINN:
+          type: string
+          description: ИНН работника.
+        salary:
+          type: number
+          description: Зарплата.
+        position:
+          type: string
+          enum:
+            - WORKER
+            - MID_MANAGER
+            - TOP_MANAGER
+            - OWNER
+          description: Должность.
+        workExperienceTotal:
+          type: integer
+          format: int32
+          description: Общий трудовой стаж.
+        workExperienceCurrent:
+          type: integer
+          format: int32
+          description: Трудовой стаж на текущем рабочем месте.
+      required:
+        - employmentStatus
+        - employerINN
+        - salary
+        - position
+        - workExperienceTotal
+        - workExperienceCurrent
+    ScoringData:
       type: object
       x-examples:
         Пример данных для скоринга.:
@@ -393,19 +367,35 @@ components:
         amount:
           type: number
           description: Сумма кредита.
+          minimum: 10000
+          example: 235345.76
         term:
           type: integer
           format: int32
           description: Срок кредита.
+          minimum: 6
+          example: 54
         firstName:
           type: string
           description: Имя.
+          pattern: '[a-zA-Z]'
+          example: Vasiliy
+          minLength: 2
+          maxLength: 30
         lastName:
           type: string
           description: Фамилия.
+          pattern: '[a-zA-Z]'
+          minLength: 2
+          maxLength: 30
+          example: Pupkin
         middleName:
           type: string
           description: Отчество.
+          pattern: '[a-zA-Z]'
+          minLength: 2
+          maxLength: 30
+          example: Ulukbekovich
         gender:
           type: string
           enum:
@@ -417,19 +407,30 @@ components:
           type: string
           format: date
           description: Дата рождения.
+          example: '1990-04-23'
         passportSeries:
           type: string
           description: Серия паспорта.
+          minLength: 4
+          maxLength: 4
+          pattern: '[\d]'
+          example: '4523'
         passportNumber:
           type: string
           description: Номер паспорта.
+          pattern: '[\d]'
+          minLength: 6
+          maxLength: 6
+          example: '234222'
         passportIssueDate:
           type: string
           format: date
           description: Дата выдачи паспорта.
+          example: '2008-12-30'
         passportIssueBranch:
           type: string
           description: Кем выдан паспорт.
+          example: Отдел УВД Бобруйска №66
         maritalStatus:
           type: string
           enum:
@@ -440,11 +441,13 @@ components:
           description: Семейное положение.
         dependentAmount:
           type: integer
+          description: Количество иждивенцев.
         employment:
-          $ref: '#/components/schemas/Models_Employment'
+          $ref: '#/components/schemas/Employment'
         account:
           type: string
           description: Номер счёта.
+          pattern: '[\d]'
         isInsuranceEnabled:
           type: boolean
           description: Есть ли страховка?
@@ -468,4 +471,130 @@ components:
         - account
         - isInsuranceEnabled
         - isSalaryClient
+    Credit:
+      type: object
+      x-examples:
+        Пример данных о кредите.:
+          amount: 12345.67
+          term: 12345
+          monthlyPayment: 6789.01
+          rate: 6.9
+          psk: 1234.67
+          isInsuranceEnabled: false
+          isSalaryClient: true
+          paymentSchedule:
+            - number: 353
+              date: '2019-08-24'
+              totalPayment: 23424.88
+              interestPayment: 234234.7
+              debtPayment: 5353.5
+              remainingDebt: 24324.46
+      properties:
+        amount:
+          type: number
+          description: Сумма кредита.
+        term:
+          type: integer
+          format: int32
+          description: Срок кредита.
+        monthlyPayment:
+          type: number
+          description: Ежемесячный платёж.
+        rate:
+          type: number
+          description: Ставка по кредиту.
+        psk:
+          type: number
+          description: Полная стоимость кредита.
+        isInsuranceEnabled:
+          type: boolean
+          description: Есть ли страховка?
+        isSalaryClient:
+          type: boolean
+          description: Является ли зарплатным клиентом?
+        paymentSchedule:
+          type: array
+          description: Расписание платежей по кредиту.
+          items:
+            $ref: '#/components/schemas/PaymentScheduleElement'
+      required:
+        - amount
+        - term
+        - monthlyPayment
+        - rate
+        - psk
+        - isInsuranceEnabled
+        - isSalaryClient
+        - paymentSchedule
+      title: Credit
+      description: Данные о кредите.
+    ApplicationStatusHistory:
+      type: object
+      x-examples:
+        Пример обновления статуса заявки по кредиту.:
+          status: PREAPPROVAL
+          time: '2019-08-24T14:15:22Z'
+          changeType: APPROVED
+      title: ApplicationStatusHistory
+      description: Обновление статуса заявки по кредиту.
+      properties:
+        status:
+          type: string
+          enum:
+            - PREAPPROVAL
+            - APPROVED
+            - CC_DENIED
+            - CC_APPROVED
+            - PREPARE_DOCUMENTS
+            - DOCUMENT_CREATED
+            - CLIENT_DENIED
+            - DOCUMENT_SIGNED
+            - CREDIT_ISSUED
+          description: Текущий статус заявки.
+        time:
+          type: string
+          format: date-time
+          description: Время обновления статуса.
+        changeType:
+          type: string
+          enum:
+            - PREAPPROVAL
+            - APPROVED
+            - CC_DENIED
+            - CC_APPROVED
+            - PREPARE_DOCUMENTS
+            - DOCUMENT_CREATED
+            - CLIENT_DENIED
+            - DOCUMENT_SIGNED
+            - CREDIT_ISSUED
+          description: Новый статус заявки.
+    EmailMessage:
+      type: object
+      x-examples:
+        example-1:
+          address: String
+          theme: Enum
+          applicationId: Long
+      title: EmailMessage
+      description: Модель письма пользователю.
+      properties:
+        address:
+          type: string
+          description: Электронный адрес пользователя.
+        theme:
+          type: string
+          enum:
+            - FINISH_REGISTRATION
+            - CREATE_DOCUMENTS
+            - SEND_DOCUMENTS
+            - SEND_SES
+            - CREDIT_ISSUED
+            - APPLICATION_DENIED
+          description: Тема письма.
+        applicationId:
+          type: integer
+          format: int64
   securitySchemes: {}
+  examples: {}
+  parameters: {}
+  responses: {}

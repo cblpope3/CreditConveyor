@@ -5,8 +5,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.Getter;
-import ru.leonov.conveyor.dto.ModelsLoanApplicationRequestDTO;
-import ru.leonov.conveyor.dto.ModelsLoanOfferDTO;
+import ru.leonov.conveyor.dto.LoanApplicationRequestDTO;
+import ru.leonov.conveyor.dto.LoanOfferDTO;
 
 import java.util.List;
 
@@ -73,20 +73,20 @@ public class LoanOfferTestData {
                 }
             ]""";
 
-    public static ModelsLoanApplicationRequestDTO getFineLoanOfferRequest() {
+    public static LoanApplicationRequestDTO getFineLoanOfferRequest() {
 
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
 
         try {
-            return mapper.readValue(fineLoanOfferRequestJSON, ModelsLoanApplicationRequestDTO.class);
+            return mapper.readValue(fineLoanOfferRequestJSON, LoanApplicationRequestDTO.class);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             throw new IllegalArgumentException("Cant parse json");
         }
     }
 
-    public static List<ModelsLoanOfferDTO> getFineLoanOfferResponse() {
+    public static List<LoanOfferDTO> getFineLoanOfferResponse() {
 
         ObjectMapper mapper = new ObjectMapper();
 

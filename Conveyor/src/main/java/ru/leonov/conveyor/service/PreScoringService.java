@@ -5,8 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import ru.leonov.conveyor.dto.ModelsLoanApplicationRequestDTO;
-import ru.leonov.conveyor.dto.ModelsLoanOfferDTO;
+import ru.leonov.conveyor.dto.LoanApplicationRequestDTO;
+import ru.leonov.conveyor.dto.LoanOfferDTO;
 import ru.leonov.conveyor.exceptions.LoanRequestException;
 
 import java.math.BigDecimal;
@@ -42,7 +42,7 @@ public class PreScoringService {
      * @return {@link List} of four credit offers.
      * @throws LoanRequestException if request not passed pre-verification process.
      */
-    public List<ModelsLoanOfferDTO> getCreditOfferList(ModelsLoanApplicationRequestDTO loanRequest) throws LoanRequestException {
+    public List<LoanOfferDTO> getCreditOfferList(LoanApplicationRequestDTO loanRequest) throws LoanRequestException {
 
         //checking request. exception will be thrown if issues happened.
         validateLoanApplicationRequestDTO(loanRequest);
@@ -59,7 +59,7 @@ public class PreScoringService {
      * @throws LoanRequestException if one of required parameters is null or parameters have incorrect format.
      * @see LoanRequestException.ExceptionCause
      */
-    private void validateLoanApplicationRequestDTO(ModelsLoanApplicationRequestDTO loanRequest) throws LoanRequestException {
+    private void validateLoanApplicationRequestDTO(LoanApplicationRequestDTO loanRequest) throws LoanRequestException {
 
         if (log.isTraceEnabled()) log.trace("Validating loan request...");
 

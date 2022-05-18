@@ -4,9 +4,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import ru.leonov.conveyor.dto.ModelsCreditDTO;
-import ru.leonov.conveyor.dto.ModelsEmploymentDTO;
-import ru.leonov.conveyor.dto.ModelsScoringDataDTO;
+import ru.leonov.conveyor.dto.CreditDTO;
+import ru.leonov.conveyor.dto.EmploymentDTO;
+import ru.leonov.conveyor.dto.ScoringDataDTO;
 import ru.leonov.conveyor.exceptions.ScoringException;
 
 import java.math.BigDecimal;
@@ -59,7 +59,7 @@ public class ScoringService {
      * @return detailed credit offer.
      * @throws ScoringException if scoring data didn't pass data validation.
      */
-    public ModelsCreditDTO calculateCredit(ModelsScoringDataDTO scoringData) throws ScoringException {
+    public CreditDTO calculateCredit(ScoringDataDTO scoringData) throws ScoringException {
 
         BigDecimal rate = calculateRate(scoringData);
 
@@ -74,7 +74,7 @@ public class ScoringService {
      * @return credit rate.
      * @throws ScoringException if scoring data is unacceptable to get credit.
      */
-    private BigDecimal calculateRate(ModelsScoringDataDTO scoringData) throws ScoringException {
+    private BigDecimal calculateRate(ScoringDataDTO scoringData) throws ScoringException {
 
         if (log.isTraceEnabled()) log.trace("Calculating credit rate. Base rate is {}.", baseRate);
 
@@ -102,30 +102,30 @@ public class ScoringService {
      * @return credit rate correction coefficient.
      * @throws ScoringException if clients employment status is unacceptable to get credit.
      */
-    private BigDecimal getJobCorrection(ModelsEmploymentDTO.EmploymentStatusEnum employmentStatus,
-                                        ModelsEmploymentDTO.PositionEnum jobPosition) throws ScoringException {
+    private BigDecimal getJobCorrection(EmploymentDTO.EmploymentStatusEnum employmentStatus,
+                                        EmploymentDTO.PositionEnum jobPosition) throws ScoringException {
 
         BigDecimal resultCorrection = BigDecimal.ZERO;
 
-        if (employmentStatus.equals(ModelsEmploymentDTO.EmploymentStatusEnum.UNEMPLOYED)) {
+        if (employmentStatus.equals(EmploymentDTO.EmploymentStatusEnum.UNEMPLOYED)) {
             // Безработный → отказ
             throw new ScoringException(ScoringException.ExceptionCause.UNACCEPTABLE_EMPLOYER_STATUS);
-        } else if (employmentStatus.equals(ModelsEmploymentDTO.EmploymentStatusEnum.SELF_EMPLOYED)) {
+        } else if (employmentStatus.equals(EmploymentDTO.EmploymentStatusEnum.SELF_EMPLOYED)) {
             // Самозанятый → ставка увеличивается на 1
             resultCorrection = resultCorrection.add(BigDecimal.ONE);
             if (log.isTraceEnabled()) log.trace("Credit rate is increased by 1 because self-employed.");
-        } else if (employmentStatus.equals(ModelsEmploymentDTO.EmploymentStatusEnum.BUSINESS_OWNER)) {
+        } else if (employmentStatus.equals(EmploymentDTO.EmploymentStatusEnum.BUSINESS_OWNER)) {
             // Владелец бизнеса → ставка увеличивается на 3
             resultCorrection = resultCorrection.add(BigDecimal.valueOf(3));
             if (log.isTraceEnabled()) log.trace("Credit rate is increased by 3 because business owner.");
         }
 
-        if (jobPosition.equals(ModelsEmploymentDTO.PositionEnum.MID_MANAGER)) {
+        if (jobPosition.equals(EmploymentDTO.PositionEnum.MID_MANAGER)) {
             // Менеджер среднего звена → ставка уменьшается на 2
             resultCorrection = resultCorrection.subtract(BigDecimal.valueOf(2));
             if (log.isTraceEnabled()) log.trace("Credit rate is decreased by 2 because mid-manager.");
 
-        } else if (jobPosition.equals(ModelsEmploymentDTO.PositionEnum.TOP_MANAGER)) {
+        } else if (jobPosition.equals(EmploymentDTO.PositionEnum.TOP_MANAGER)) {
             // Топ-менеджер → ставка уменьшается на 4
             resultCorrection = resultCorrection.subtract(BigDecimal.valueOf(4));
             if (log.isTraceEnabled()) log.trace("Credit rate is decreased by 4 because top-manager.");
@@ -157,15 +157,15 @@ public class ScoringService {
      * @param dependentAmount amount of dependent persons (children etc.).
      * @return credit rate correction coefficient.
      */
-    private BigDecimal getFamilyCorrection(ModelsScoringDataDTO.MaritalStatusEnum maritalStatus, Integer dependentAmount) {
+    private BigDecimal getFamilyCorrection(ScoringDataDTO.MaritalStatusEnum maritalStatus, Integer dependentAmount) {
 
         BigDecimal resultCorrection = BigDecimal.ZERO;
 
-        if (maritalStatus.equals(ModelsScoringDataDTO.MaritalStatusEnum.MARRIED)) {
+        if (maritalStatus.equals(ScoringDataDTO.MaritalStatusEnum.MARRIED)) {
             // Замужем/женат → ставка уменьшается на 3
             if (log.isTraceEnabled()) log.trace("Credit rate is decreased by 3 because married.");
             resultCorrection = resultCorrection.subtract(BigDecimal.valueOf(3));
-        } else if (maritalStatus.equals(ModelsScoringDataDTO.MaritalStatusEnum.DIVORCED)) {
+        } else if (maritalStatus.equals(ScoringDataDTO.MaritalStatusEnum.DIVORCED)) {
             // Разведен → ставка увеличивается на 1
             if (log.isTraceEnabled()) log.trace("Credit rate is increased by 1 because divorced.");
             resultCorrection = resultCorrection.add(BigDecimal.ONE);
@@ -189,7 +189,7 @@ public class ScoringService {
      * @return credit rate correction coefficient.
      * @throws ScoringException if client age is out of acceptable range.
      */
-    private BigDecimal getAgeRateCorrection(LocalDate birthday, ModelsScoringDataDTO.GenderEnum gender) throws ScoringException {
+    private BigDecimal getAgeRateCorrection(LocalDate birthday, ScoringDataDTO.GenderEnum gender) throws ScoringException {
 
         BigDecimal resultCorrection = BigDecimal.ZERO;
 
@@ -201,7 +201,7 @@ public class ScoringService {
 
             throw new ScoringException(ScoringException.ExceptionCause.UNACCEPTABLE_AGE);
 
-        } else if (gender.equals(ModelsScoringDataDTO.GenderEnum.MALE)
+        } else if (gender.equals(ScoringDataDTO.GenderEnum.MALE)
                 && age >= MALE_PREFERRED_AGE_MIN && age <= MALE_PREFERRED_AGE_MAX) {
             // Мужчина, возраст от 30 до 55 лет → ставка уменьшается на 3
 
@@ -209,7 +209,7 @@ public class ScoringService {
                 log.trace("Credit rate is decreased by 3 because male with fine age.");
             resultCorrection = resultCorrection.subtract(BigDecimal.valueOf(3));
 
-        } else if (gender.equals(ModelsScoringDataDTO.GenderEnum.FEMALE)
+        } else if (gender.equals(ScoringDataDTO.GenderEnum.FEMALE)
                 && age >= FEMALE_PREFERRED_AGE_MIN && age <= FEMALE_PREFERRED_AGE_MAX) {
             // Женщина, возраст от 35 до 60 лет → ставка уменьшается на 3
 
@@ -217,7 +217,7 @@ public class ScoringService {
                 log.trace("Credit rate is decreased by 3 because female with fine age.");
             resultCorrection = resultCorrection.subtract(BigDecimal.valueOf(3));
 
-        } else if (gender.equals(ModelsScoringDataDTO.GenderEnum.NON_BINARY)) {
+        } else if (gender.equals(ScoringDataDTO.GenderEnum.NON_BINARY)) {
             // Небинарный → ставка увеличивается на 3
 
             if (log.isTraceEnabled()) log.trace("Credit rate is increased by 3 because non-binary person.");

@@ -4,8 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.Getter;
-import ru.leonov.conveyor.dto.ModelsCreditDTO;
-import ru.leonov.conveyor.dto.ModelsScoringDataDTO;
+import ru.leonov.conveyor.dto.CreditDTO;
+import ru.leonov.conveyor.dto.ScoringDataDTO;
 
 public class LoanCalculationTestData {
 
@@ -150,26 +150,26 @@ public class LoanCalculationTestData {
                  ]
              }""";
 
-    public static ModelsScoringDataDTO getFineLoanCalculationRequest() {
+    public static ScoringDataDTO getFineLoanCalculationRequest() {
 
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
 
         try {
-            return mapper.readValue(fineLoanCalculationRequestJSON, ModelsScoringDataDTO.class);
+            return mapper.readValue(fineLoanCalculationRequestJSON, ScoringDataDTO.class);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             throw new IllegalArgumentException("Cant parse json");
         }
     }
 
-    public static ModelsCreditDTO getFineLoanCalculationResponse() {
+    public static CreditDTO getFineLoanCalculationResponse() {
 
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
 
         try {
-            return mapper.readValue(fineLoanCalculationResponseJSON, ModelsCreditDTO.class);
+            return mapper.readValue(fineLoanCalculationResponseJSON, CreditDTO.class);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             throw new IllegalArgumentException("Cant parse json");

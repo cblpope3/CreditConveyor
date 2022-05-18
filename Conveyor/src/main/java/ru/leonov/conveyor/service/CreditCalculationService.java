@@ -2,9 +2,9 @@ package ru.leonov.conveyor.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.leonov.conveyor.dto.ModelsCreditDTO;
-import ru.leonov.conveyor.dto.ModelsLoanOfferDTO;
-import ru.leonov.conveyor.dto.ModelsPaymentScheduleElementDTO;
+import ru.leonov.conveyor.dto.CreditDTO;
+import ru.leonov.conveyor.dto.LoanOfferDTO;
+import ru.leonov.conveyor.dto.PaymentScheduleElementDTO;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -42,24 +42,24 @@ public class CreditCalculationService {
      * @param baseRate     base credit rate.
      * @return {@link List} of four credit offers.
      */
-    public List<ModelsLoanOfferDTO> generateCreditOffers(BigDecimal creditAmount, int creditTerm,
-                                                         BigDecimal baseRate) {
+    public List<LoanOfferDTO> generateCreditOffers(BigDecimal creditAmount, int creditTerm,
+                                                   BigDecimal baseRate) {
 
         log.trace("Generating credit pre-offer list...");
-        ArrayList<ModelsLoanOfferDTO> resultList = new ArrayList<>(4);
+        ArrayList<LoanOfferDTO> resultList = new ArrayList<>(4);
 
         //generating result list with initial parameters
         for (int i = 0; i < 4; i++) {
-            ModelsLoanOfferDTO modelsLoanOfferDTO = new ModelsLoanOfferDTO();
+            LoanOfferDTO loanOfferDTO = new LoanOfferDTO();
             //fixme application id random generation is temporary.
-            modelsLoanOfferDTO.setApplicationId(randomGenerator.nextLong(1, 1000000));
-            modelsLoanOfferDTO.requestedAmount(creditAmount);
-            modelsLoanOfferDTO.setTerm(creditTerm);
-            modelsLoanOfferDTO.setIsSalaryClient(false);
-            modelsLoanOfferDTO.setIsInsuranceEnabled(false);
-            modelsLoanOfferDTO.setRate(baseRate);
+            loanOfferDTO.setApplicationId(randomGenerator.nextLong(1, 1000000));
+            loanOfferDTO.requestedAmount(creditAmount);
+            loanOfferDTO.setTerm(creditTerm);
+            loanOfferDTO.setIsSalaryClient(false);
+            loanOfferDTO.setIsInsuranceEnabled(false);
+            loanOfferDTO.setRate(baseRate);
 
-            resultList.add(modelsLoanOfferDTO);
+            resultList.add(loanOfferDTO);
         }
         resultList.get(1).setIsInsuranceEnabled(true);
         resultList.get(2).setIsSalaryClient(true);
@@ -67,27 +67,27 @@ public class CreditCalculationService {
         resultList.get(3).setIsInsuranceEnabled(true);
 
         //calculating different offers
-        for (ModelsLoanOfferDTO modelsLoanOfferDTO : resultList) {
+        for (LoanOfferDTO LoanOfferDTO : resultList) {
 
             BigDecimal paymentForInsurance = BigDecimal.ZERO;
 
             //calculating current rate depending on base rate and booleans
-            if (Boolean.TRUE.equals(modelsLoanOfferDTO.getIsInsuranceEnabled())) {
-                modelsLoanOfferDTO.setRate(modelsLoanOfferDTO.getRate().subtract(BigDecimal.ONE));
+            if (Boolean.TRUE.equals(LoanOfferDTO.getIsInsuranceEnabled())) {
+                LoanOfferDTO.setRate(LoanOfferDTO.getRate().subtract(BigDecimal.ONE));
                 paymentForInsurance = INSURANCE_COST;
             }
-            if (Boolean.TRUE.equals(modelsLoanOfferDTO.getIsSalaryClient()))
-                modelsLoanOfferDTO.setRate(modelsLoanOfferDTO.getRate().subtract(BigDecimal.valueOf(3)));
+            if (Boolean.TRUE.equals(LoanOfferDTO.getIsSalaryClient()))
+                LoanOfferDTO.setRate(LoanOfferDTO.getRate().subtract(BigDecimal.valueOf(3)));
 
             //calculating monthly payment
-            modelsLoanOfferDTO.setMonthlyPayment(calculateMonthlyPayment(
-                    modelsLoanOfferDTO.getRequestedAmount(),
-                    modelsLoanOfferDTO.getRate(),
-                    modelsLoanOfferDTO.getTerm()));
+            LoanOfferDTO.setMonthlyPayment(calculateMonthlyPayment(
+                    LoanOfferDTO.getRequestedAmount(),
+                    LoanOfferDTO.getRate(),
+                    LoanOfferDTO.getTerm()));
 
             //calculating total credit amount
-            modelsLoanOfferDTO.setTotalAmount(modelsLoanOfferDTO.getMonthlyPayment()
-                    .multiply(BigDecimal.valueOf(modelsLoanOfferDTO.getTerm()), MathContext.DECIMAL64)
+            LoanOfferDTO.setTotalAmount(LoanOfferDTO.getMonthlyPayment()
+                    .multiply(BigDecimal.valueOf(LoanOfferDTO.getTerm()), MathContext.DECIMAL64)
                     .add(paymentForInsurance));
         }
         if (log.isTraceEnabled()) log.trace("Generated offers: {}, {}, {}, {}",
@@ -108,13 +108,13 @@ public class CreditCalculationService {
      * @param isSalaryClient     is customer salary client.
      * @return detailed credit offer.
      */
-    public ModelsCreditDTO calculateCredit(BigDecimal creditAmount, BigDecimal creditRate, int creditTerm,
-                                           boolean isInsuranceEnabled, boolean isSalaryClient) {
+    public CreditDTO calculateCredit(BigDecimal creditAmount, BigDecimal creditRate, int creditTerm,
+                                     boolean isInsuranceEnabled, boolean isSalaryClient) {
 
         if (log.isTraceEnabled()) log.trace("Generating {} roubles {}% credit for {} months.",
                 creditAmount, creditRate, creditRate);
 
-        ModelsCreditDTO credit = new ModelsCreditDTO();
+        CreditDTO credit = new CreditDTO();
 
         credit.setAmount(creditAmount);
         credit.setTerm(creditTerm);
@@ -125,7 +125,7 @@ public class CreditCalculationService {
         // размер ежемесячного платежа(monthlyPayment),
         BigDecimal monthlyPayment = calculateMonthlyPayment(creditAmount, creditRate, creditTerm);
         // график ежемесячных платежей (List<PaymentScheduleElement>)
-        List<ModelsPaymentScheduleElementDTO> paymentSchedule = calculateMonthlyPaymentsSchedule(
+        List<PaymentScheduleElementDTO> paymentSchedule = calculateMonthlyPaymentsSchedule(
                 creditAmount, creditTerm,
                 creditRate.divide(MONTHS_IN_YEAR.multiply(HUNDRED_PERCENTS), MathContext.DECIMAL64), monthlyPayment);
         BigDecimal psk = calculatePSK(paymentSchedule, creditAmount);
@@ -147,7 +147,7 @@ public class CreditCalculationService {
      * @param creditAmount    full credit amount.
      * @return calculated full credit price.
      */
-    private BigDecimal calculatePSK(List<ModelsPaymentScheduleElementDTO> paymentSchedule,
+    private BigDecimal calculatePSK(List<PaymentScheduleElementDTO> paymentSchedule,
                                     BigDecimal creditAmount) {
 
         log.trace("Calculating PSK.");
@@ -157,7 +157,7 @@ public class CreditCalculationService {
         List<LocalDate> paymentDates = new ArrayList<>();
         paymentDates.add(paymentSchedule.get(0).getDate().minusMonths(1));
         paymentDates.addAll(paymentSchedule.stream()
-                .map(ModelsPaymentScheduleElementDTO::getDate)
+                .map(PaymentScheduleElementDTO::getDate)
                 .toList());
 
         //making list of all payments
@@ -165,7 +165,7 @@ public class CreditCalculationService {
         List<BigDecimal> payments = new ArrayList<>();
         payments.add(creditAmount.multiply(BigDecimal.valueOf(-1)));
         payments.addAll(paymentSchedule.stream()
-                .map(ModelsPaymentScheduleElementDTO::getTotalPayment)
+                .map(PaymentScheduleElementDTO::getTotalPayment)
                 .toList());
 
         //calculating total payments amount (including getting of the loan itself)
@@ -261,7 +261,7 @@ public class CreditCalculationService {
      * @param monthlyPayment monthly payment.
      * @return {@link List} of payments.
      */
-    private List<ModelsPaymentScheduleElementDTO> calculateMonthlyPaymentsSchedule(
+    private List<PaymentScheduleElementDTO> calculateMonthlyPaymentsSchedule(
             BigDecimal creditAmount,
             int creditTerm,
             BigDecimal monthlyRate,
@@ -269,13 +269,13 @@ public class CreditCalculationService {
 
         BigDecimal remainingDebt = BigDecimal.valueOf(creditAmount.doubleValue());
 
-        List<ModelsPaymentScheduleElementDTO> paymentSchedule = new ArrayList<>(creditTerm);
+        List<PaymentScheduleElementDTO> paymentSchedule = new ArrayList<>(creditTerm);
 
         LocalDate paymentDate = LocalDate.now().plusMonths(1);
 
         for (int i = 1; i < creditTerm + 1; i++) {
 
-            ModelsPaymentScheduleElementDTO paymentScheduleElement = new ModelsPaymentScheduleElementDTO();
+            PaymentScheduleElementDTO paymentScheduleElement = new PaymentScheduleElementDTO();
             paymentScheduleElement.setNumber(i);
             paymentScheduleElement.setDate(paymentDate);
 

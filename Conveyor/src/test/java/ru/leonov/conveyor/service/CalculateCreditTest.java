@@ -4,8 +4,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import ru.leonov.conveyor.dto.ModelsCreditDTO;
-import ru.leonov.conveyor.dto.ModelsPaymentScheduleElementDTO;
+import ru.leonov.conveyor.dto.CreditDTO;
+import ru.leonov.conveyor.dto.PaymentScheduleElementDTO;
 import ru.leonov.conveyor.test_data.LoanCalculationTestData;
 
 import java.util.List;
@@ -26,7 +26,7 @@ class CalculateCreditTest {
     @Test
     void generateCreditOffers() {
         //simulating service method call
-        ModelsCreditDTO calculatedCredit = creditCalculationService.calculateCredit(
+        CreditDTO calculatedCredit = creditCalculationService.calculateCredit(
                 LoanCalculationTestData.getFineLoanCalculationRequest().getAmount(),
                 LoanCalculationTestData.getFineLoanCalculationResponse().getRate(),
                 LoanCalculationTestData.getFineLoanCalculationRequest().getTerm(),
@@ -37,7 +37,7 @@ class CalculateCreditTest {
         assertTrue(creditsAreEqual(LoanCalculationTestData.getFineLoanCalculationResponse(), calculatedCredit));
     }
 
-    private boolean creditsAreEqual(ModelsCreditDTO credit1, ModelsCreditDTO credit2) {
+    private boolean creditsAreEqual(CreditDTO credit1, CreditDTO credit2) {
 
         return
                 credit1.getAmount().compareTo(credit2.getAmount()) == 0 &&
@@ -51,8 +51,8 @@ class CalculateCreditTest {
 
     }
 
-    private boolean creditSchedulesAreEqual(List<ModelsPaymentScheduleElementDTO> paymentSchedule1,
-                                            List<ModelsPaymentScheduleElementDTO> paymentSchedule2) {
+    private boolean creditSchedulesAreEqual(List<PaymentScheduleElementDTO> paymentSchedule1,
+                                            List<PaymentScheduleElementDTO> paymentSchedule2) {
 
         if (paymentSchedule1.size() != paymentSchedule2.size()) return false;
 
