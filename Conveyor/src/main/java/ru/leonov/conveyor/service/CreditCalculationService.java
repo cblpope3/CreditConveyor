@@ -140,33 +140,6 @@ public class CreditCalculationService {
     }
 
     /**
-     * Calculation of full credit price with simplified formula.
-     *
-     * @param creditAmount     full credit amount, roubles.
-     * @param totalPayments    total payments for credit (debt and interest), roubles.
-     * @param creditTermMonths credit term, months.
-     * @return calculated full credit price.
-     * @deprecated because calculation with this formula gives incorrect results.
-     */
-    @SuppressWarnings("unused")
-    @Deprecated(since = "1.0", forRemoval = false)
-    private BigDecimal calculatePSKSimplified(BigDecimal creditAmount, BigDecimal totalPayments, int creditTermMonths) {
-        // PSK = 100 * ((s/s0) - 1) / n
-        // where
-        // s - total payments sum
-        // s0 - credit amount
-        // n - credit term in years
-        log.info("Calculating PSK with simplified formula.");
-        BigDecimal creditTermYears = BigDecimal.valueOf(creditTermMonths).divide(MONTHS_IN_YEAR, MathContext.DECIMAL64);
-
-        BigDecimal overpayCoefficient = totalPayments.divide(creditAmount, MathContext.DECIMAL64).subtract(BigDecimal.ONE);
-        BigDecimal partialResult = overpayCoefficient
-                .divide(creditTermYears, MathContext.DECIMAL64);
-
-        return partialResult.multiply(HUNDRED_PERCENTS).setScale(2, RoundingMode.HALF_UP);
-    }
-
-    /**
      * Calculation of full credit price. Calculated by
      * <a href="https://unicom24.ru/media/open/2/8/7e/87ef428f1c52a440b97e516d7dbd06c2.jpg">this</a> formula.
      *
@@ -277,21 +250,6 @@ public class CreditCalculationService {
         return i.multiply(basePeriodNumberInYear)
                 .multiply(HUNDRED_PERCENTS)
                 .setScale(2, RoundingMode.HALF_UP);
-    }
-
-    /**
-     * Calculation of total credit payments (debt and interest) based on given payments schedule.
-     *
-     * @param paymentSchedule credit payments schedule.
-     * @return sum of all credit payments.
-     */
-    private BigDecimal calculateTotalCreditPayments(List<ModelsPaymentScheduleElementDTO> paymentSchedule) {
-        //assuming that in payments schedule can be the loan itself
-        //therefore, counting only positive payments
-        return paymentSchedule.stream()
-                .map(ModelsPaymentScheduleElementDTO::getTotalPayment)
-                .filter(payment -> payment.compareTo(BigDecimal.ZERO) > 0)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     /**
