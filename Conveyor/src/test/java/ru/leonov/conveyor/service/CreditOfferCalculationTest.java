@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(SpringExtension.class)
-class CreditCalculationServiceTest {
+class CreditOfferCalculationTest {
 
     private final BigDecimal baseRate = BigDecimal.valueOf(15);
     private CreditCalculationService creditCalculationService;
