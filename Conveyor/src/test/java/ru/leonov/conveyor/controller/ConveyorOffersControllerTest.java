@@ -35,7 +35,7 @@ class ConveyorOffersControllerTest {
         when(preScoringService.getCreditOfferList(LoanOfferTestData.getFineLoanOfferRequest()))
                 .thenReturn(LoanOfferTestData.getFineLoanOfferResponse());
 
-        this.mockMvc.perform(post("/conveyor/offers")
+        mockMvc.perform(post("/conveyor/offers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(LoanOfferTestData.getFineLoanOfferRequestJSON()))
                 .andDo(print())
@@ -51,7 +51,7 @@ class ConveyorOffersControllerTest {
         when(preScoringService.getCreditOfferList(LoanOfferTestData.getNoMiddleNameLoanOfferRequest()))
                 .thenReturn(LoanOfferTestData.getFineLoanOfferResponse());
 
-        this.mockMvc.perform(post("/conveyor/offers")
+        mockMvc.perform(post("/conveyor/offers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(LoanOfferTestData.getNoMiddleNameLoanOfferRequestJSON()))
                 .andDo(print())
@@ -66,7 +66,7 @@ class ConveyorOffersControllerTest {
     @Test
     void postConveyorOffersNoAmount() throws Exception {
 
-        this.mockMvc.perform(post("/conveyor/offers")
+        mockMvc.perform(post("/conveyor/offers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(LoanOfferTestData.getNoAmountLoanOfferRequestJSON()))
                 .andDo(print())
@@ -78,7 +78,7 @@ class ConveyorOffersControllerTest {
     @Test
     void postConveyorOffersWrongAmount() throws Exception {
 
-        this.mockMvc.perform(post("/conveyor/offers")
+        mockMvc.perform(post("/conveyor/offers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(LoanOfferTestData.getWrongAmountLoanOfferRequestJSON()))
                 .andDo(print())
@@ -90,7 +90,7 @@ class ConveyorOffersControllerTest {
     @Test
     void postConveyorOffersNoTerm() throws Exception {
 
-        this.mockMvc.perform(post("/conveyor/offers")
+        mockMvc.perform(post("/conveyor/offers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(LoanOfferTestData.getNoTermLoanOfferRequestJSON()))
                 .andDo(print())
@@ -102,7 +102,7 @@ class ConveyorOffersControllerTest {
     @Test
     void postConveyorOffersWrongTerm() throws Exception {
 
-        this.mockMvc.perform(post("/conveyor/offers")
+        mockMvc.perform(post("/conveyor/offers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(LoanOfferTestData.getWrongTermLoanOfferRequestJSON()))
                 .andDo(print())
@@ -114,7 +114,7 @@ class ConveyorOffersControllerTest {
     @Test
     void postConveyorOffersNoFirstName() throws Exception {
 
-        this.mockMvc.perform(post("/conveyor/offers")
+        mockMvc.perform(post("/conveyor/offers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(LoanOfferTestData.getNoFirstNameLoanOfferRequestJSON()))
                 .andDo(print())
@@ -126,7 +126,7 @@ class ConveyorOffersControllerTest {
     @Test
     void postConveyorOffersWrongFirstName() throws Exception {
 
-        this.mockMvc.perform(post("/conveyor/offers")
+        mockMvc.perform(post("/conveyor/offers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(LoanOfferTestData.getWrongFirstNameLoanOfferRequestJSON()))
                 .andDo(print())
@@ -138,7 +138,7 @@ class ConveyorOffersControllerTest {
     @Test
     void postConveyorOffersNoLastName() throws Exception {
 
-        this.mockMvc.perform(post("/conveyor/offers")
+        mockMvc.perform(post("/conveyor/offers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(LoanOfferTestData.getNoLastNameLoanOfferRequestJSON()))
                 .andDo(print())
@@ -150,7 +150,7 @@ class ConveyorOffersControllerTest {
     @Test
     void postConveyorOffersWrongLastName() throws Exception {
 
-        this.mockMvc.perform(post("/conveyor/offers")
+        mockMvc.perform(post("/conveyor/offers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(LoanOfferTestData.getWrongLastNameLoanOfferRequestJSON()))
                 .andDo(print())
@@ -162,7 +162,7 @@ class ConveyorOffersControllerTest {
     @Test
     void postConveyorOffersWrongMiddleName() throws Exception {
 
-        this.mockMvc.perform(post("/conveyor/offers")
+        mockMvc.perform(post("/conveyor/offers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(LoanOfferTestData.getWrongMiddleNameLoanOfferRequestJSON()))
                 .andDo(print())
@@ -174,7 +174,7 @@ class ConveyorOffersControllerTest {
     @Test
     void postConveyorOffersNoEmail() throws Exception {
 
-        this.mockMvc.perform(post("/conveyor/offers")
+        mockMvc.perform(post("/conveyor/offers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(LoanOfferTestData.getNoEmailLoanOfferRequestJSON()))
                 .andDo(print())
@@ -186,7 +186,7 @@ class ConveyorOffersControllerTest {
     @Test
     void postConveyorOffersWrongEmail() throws Exception {
 
-        this.mockMvc.perform(post("/conveyor/offers")
+        mockMvc.perform(post("/conveyor/offers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(LoanOfferTestData.getWrongEmailLoanOfferRequestJSON()))
                 .andDo(print())
@@ -198,7 +198,7 @@ class ConveyorOffersControllerTest {
     @Test
     void postConveyorOffersNoBirthdate() throws Exception {
 
-        this.mockMvc.perform(post("/conveyor/offers")
+        mockMvc.perform(post("/conveyor/offers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(LoanOfferTestData.getNoBirthdateLoanOfferRequestJSON()))
                 .andDo(print())
@@ -210,7 +210,7 @@ class ConveyorOffersControllerTest {
     @Test
     void postConveyorOffersWrongBirthdate() throws Exception {
 
-        this.mockMvc.perform(post("/conveyor/offers")
+        mockMvc.perform(post("/conveyor/offers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(LoanOfferTestData.getWrongBirthdateLoanOfferRequestJSON()))
                 .andDo(print())
@@ -222,7 +222,7 @@ class ConveyorOffersControllerTest {
     @Test
     void postConveyorOffersNoPassportSeries() throws Exception {
 
-        this.mockMvc.perform(post("/conveyor/offers")
+        mockMvc.perform(post("/conveyor/offers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(LoanOfferTestData.getNoPassportSeriesLoanOfferRequestJSON()))
                 .andDo(print())
@@ -234,7 +234,7 @@ class ConveyorOffersControllerTest {
     @Test
     void postConveyorOffersWrongPassportSeries() throws Exception {
 
-        this.mockMvc.perform(post("/conveyor/offers")
+        mockMvc.perform(post("/conveyor/offers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(LoanOfferTestData.getWrongPassportSeriesLoanOfferRequestJSON()))
                 .andDo(print())
@@ -246,7 +246,7 @@ class ConveyorOffersControllerTest {
     @Test
     void postConveyorOffersNoPassportNumber() throws Exception {
 
-        this.mockMvc.perform(post("/conveyor/offers")
+        mockMvc.perform(post("/conveyor/offers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(LoanOfferTestData.getNoPassportNumberLoanOfferRequestJSON()))
                 .andDo(print())
@@ -258,7 +258,7 @@ class ConveyorOffersControllerTest {
     @Test
     void postConveyorOffersWrongPassportNumber() throws Exception {
 
-        this.mockMvc.perform(post("/conveyor/offers")
+        mockMvc.perform(post("/conveyor/offers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(LoanOfferTestData.getWrongPassportNumberLoanOfferRequestJSON()))
                 .andDo(print())

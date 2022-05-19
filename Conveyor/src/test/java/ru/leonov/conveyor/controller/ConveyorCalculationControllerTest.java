@@ -57,7 +57,7 @@ class ConveyorCalculationControllerTest {
         when(scoringService.calculateCredit(LoanCalculationTestData.getFineLoanCalculationRequestObject()))
                 .thenThrow(new ScoringException(ScoringException.ExceptionCause.UNACCEPTABLE_EMPLOYER_STATUS));
 
-        this.mockMvc.perform(post("/conveyor/calculation")
+        mockMvc.perform(post("/conveyor/calculation")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(LoanCalculationTestData.getExampleLoanCalculationRequestJSON()))
                 .andDo(print())
