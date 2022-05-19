@@ -7,8 +7,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.leonov.conveyor.exceptions.ScoringException;
+import ru.leonov.conveyor.facade.CreditCalculationFacade;
 import ru.leonov.conveyor.service.PreScoringService;
-import ru.leonov.conveyor.service.ScoringService;
 import ru.leonov.conveyor.test_data.LoanCalculationTestData;
 
 import static org.mockito.Mockito.*;
@@ -28,13 +28,13 @@ class ConveyorCalculationControllerTest {
     PreScoringService preScoringService;
 
     @MockBean
-    ScoringService scoringService;
+    CreditCalculationFacade creditCalculationFacade;
 
     //testing fine request
     @Test
     void postConveyorCalculation() throws Exception {
 
-        when(scoringService.calculateCredit(LoanCalculationTestData.getFineLoanCalculationRequestObject()))
+        when(creditCalculationFacade.calculateCredit(LoanCalculationTestData.getFineLoanCalculationRequestObject()))
                 .thenReturn(LoanCalculationTestData.getFineLoanCalculationResponseObject());
 
         String expectedResponse = LoanCalculationTestData.getFineLoanCalculationResponseJSON();
@@ -46,7 +46,7 @@ class ConveyorCalculationControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().json(expectedResponse));
 
-        verify(scoringService, times(1))
+        verify(creditCalculationFacade, times(1))
                 .calculateCredit(LoanCalculationTestData.getFineLoanCalculationRequestObject());
     }
 
@@ -54,7 +54,7 @@ class ConveyorCalculationControllerTest {
     @Test
     void postConveyorCalculationException() throws Exception {
 
-        when(scoringService.calculateCredit(LoanCalculationTestData.getFineLoanCalculationRequestObject()))
+        when(creditCalculationFacade.calculateCredit(LoanCalculationTestData.getFineLoanCalculationRequestObject()))
                 .thenThrow(new ScoringException(ScoringException.ExceptionCause.UNACCEPTABLE_EMPLOYER_STATUS));
 
         mockMvc.perform(post("/conveyor/calculation")
@@ -63,7 +63,7 @@ class ConveyorCalculationControllerTest {
                 .andDo(print())
                 .andExpect(status().isNoContent());
 
-        verify(scoringService, times(1))
+        verify(creditCalculationFacade, times(1))
                 .calculateCredit(LoanCalculationTestData.getFineLoanCalculationRequestObject());
     }
 }

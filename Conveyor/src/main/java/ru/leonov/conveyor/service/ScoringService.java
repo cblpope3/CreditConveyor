@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import ru.leonov.conveyor.dto.CreditDTO;
 import ru.leonov.conveyor.dto.EmploymentDTO;
 import ru.leonov.conveyor.dto.ScoringDataDTO;
 import ru.leonov.conveyor.exceptions.ScoringException;
@@ -43,28 +42,10 @@ public class ScoringService {
     private static final BigDecimal SALARY_TO_LOAN_RATE_LIMIT = BigDecimal.valueOf(20);
 
     private final BigDecimal baseRate;
-    private final CreditCalculationService creditCalculationService;
 
     @Autowired
-    public ScoringService(@Value("${app-params.baseRate}") double baseRate,
-                          CreditCalculationService creditCalculationService) {
+    public ScoringService(@Value("${app-params.baseRate}") double baseRate) {
         this.baseRate = BigDecimal.valueOf(baseRate);
-        this.creditCalculationService = creditCalculationService;
-    }
-
-    /**
-     * Calculate credit rate and create detailed credit offer.
-     *
-     * @param scoringData data for requested credit scoring.
-     * @return detailed credit offer.
-     * @throws ScoringException if scoring data didn't pass data validation.
-     */
-    public CreditDTO calculateCredit(ScoringDataDTO scoringData) throws ScoringException {
-
-        BigDecimal rate = calculateRate(scoringData);
-
-        return creditCalculationService.calculateCredit(scoringData.getAmount(), rate, scoringData.getTerm(),
-                scoringData.getIsInsuranceEnabled(), scoringData.getIsSalaryClient());
     }
 
     /**
@@ -74,7 +55,7 @@ public class ScoringService {
      * @return credit rate.
      * @throws ScoringException if scoring data is unacceptable to get credit.
      */
-    private BigDecimal calculateRate(ScoringDataDTO scoringData) throws ScoringException {
+    public BigDecimal calculateRate(ScoringDataDTO scoringData) throws ScoringException {
 
         log.trace("Calculating credit rate. Base rate is {}.", baseRate);
 

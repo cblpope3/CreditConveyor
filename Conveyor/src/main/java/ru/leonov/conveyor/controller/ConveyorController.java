@@ -19,8 +19,8 @@ import ru.leonov.conveyor.dto.LoanApplicationRequestDTO;
 import ru.leonov.conveyor.dto.LoanOfferDTO;
 import ru.leonov.conveyor.dto.ScoringDataDTO;
 import ru.leonov.conveyor.exceptions.ScoringException;
+import ru.leonov.conveyor.facade.CreditCalculationFacade;
 import ru.leonov.conveyor.service.PreScoringService;
-import ru.leonov.conveyor.service.ScoringService;
 
 import java.util.List;
 import java.util.Objects;
@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 public class ConveyorController implements ConveyorApi {
 
     private final PreScoringService preScoringService;
-    private final ScoringService scoringService;
+    private final CreditCalculationFacade creditCalculationFacade;
 
     /**
      * {@inheritDoc}
@@ -44,9 +44,12 @@ public class ConveyorController implements ConveyorApi {
         log.debug("Got /conveyor/calculation request.");
 
         try {
-            CreditDTO credit = scoringService.calculateCredit(scoringDataDTO);
+
+            CreditDTO credit = creditCalculationFacade.calculateCredit(scoringDataDTO);
             log.debug("Credit calculated, returning response.");
+
             return new ResponseEntity<>(credit, HttpStatus.OK);
+
         } catch (ScoringException e) {
             log.debug("Credit denied. Reason: {}", e.getMessage());
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);

@@ -6,8 +6,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import ru.leonov.conveyor.facade.CreditCalculationFacade;
 import ru.leonov.conveyor.service.PreScoringService;
-import ru.leonov.conveyor.service.ScoringService;
 import ru.leonov.conveyor.test_data.LoanOfferTestData;
 
 import static org.mockito.Mockito.*;
@@ -27,7 +27,7 @@ class ConveyorOffersControllerTest {
 
     @SuppressWarnings("unused")
     @MockBean
-    ScoringService scoringService;
+    CreditCalculationFacade creditCalculationFacade;
 
     @Test
     void postConveyorOffersFine() throws Exception {
