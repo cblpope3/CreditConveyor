@@ -33,14 +33,43 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/LoanOffer'
-              examples: {}
+              examples:
+                Предложения по кредитованию.:
+                  value:
+                    - applicationId: 232639
+                      requestedAmount: 30000
+                      totalAmount: 31326.06
+                      term: 6
+                      monthlyPayment: 5221.01
+                      rate: 15
+                      isInsuranceEnabled: false
+                      isSalaryClient: false
+                    - applicationId: 364563
+                      requestedAmount: 30000
+                      totalAmount: 131236.84
+                      term: 6
+                      monthlyPayment: 5206.14
+                      rate: 14
+                      isInsuranceEnabled: true
+                      isSalaryClient: false
+                    - applicationId: 816044
+                      requestedAmount: 30000
+                      totalAmount: 31058.7
+                      term: 6
+                      monthlyPayment: 5176.45
+                      rate: 12
+                      isInsuranceEnabled: false
+                      isSalaryClient: true
+                    - applicationId: 518786
+                      requestedAmount: 30000
+                      totalAmount: 130969.84
+                      term: 6
+                      monthlyPayment: 5161.64
+                      rate: 11
+                      isInsuranceEnabled: true
+                      isSalaryClient: true
         '400':
-          description: Bad Request
-          headers:
-            cause:
-              schema:
-                type: string
-              description: 'Причина '
+          $ref: '#/components/responses/LoanErrorResponse'
       description: Get possible credit offer.
       requestBody:
         content:
@@ -73,6 +102,57 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Credit'
+              examples:
+                Пример рассчитанных параметров кредита.:
+                  value:
+                    amount: 30000
+                    term: 6
+                    monthlyPayment: 5235.91
+                    rate: 16
+                    psk: 16.92
+                    isInsuranceEnabled: false
+                    isSalaryClient: true
+                    paymentSchedule:
+                      - number: 1
+                        date: '2022-06-18'
+                        totalPayment: 5235.91
+                        interestPayment: 400
+                        debtPayment: 4835.91
+                        remainingDebt: 25164.09
+                      - number: 2
+                        date: '2022-07-18'
+                        totalPayment: 5235.91
+                        interestPayment: 335.52
+                        debtPayment: 4900.39
+                        remainingDebt: 20263.7
+                      - number: 3
+                        date: '2022-08-18'
+                        totalPayment: 5235.91
+                        interestPayment: 270.18
+                        debtPayment: 4965.73
+                        remainingDebt: 15297.97
+                      - number: 4
+                        date: '2022-09-18'
+                        totalPayment: 5235.91
+                        interestPayment: 203.97
+                        debtPayment: 5031.94
+                        remainingDebt: 10266.03
+                      - number: 5
+                        date: '2022-10-18'
+                        totalPayment: 5235.91
+                        interestPayment: 136.88
+                        debtPayment: 5099.03
+                        remainingDebt: 5167
+                      - number: 6
+                        date: '2022-11-18'
+                        totalPayment: 5235.89
+                        interestPayment: 68.89
+                        debtPayment: 5167
+                        remainingDebt: 0
+        '204':
+          $ref: '#/components/responses/LoanErrorResponse'
+        '400':
+          $ref: '#/components/responses/LoanErrorResponse'
       description: 'Проверка присланных данных, скоринг данных, полный расчёт параметров кредита.'
       requestBody:
         content:
@@ -97,7 +177,7 @@ paths:
                   dependentAmount: 0
                   employment:
                     employmentStatus: EMPLOYED
-                    employerINN: '43646375637'
+                    employerINN: '436463756374'
                     salary: 34345
                     position: WORKER
                     workExperienceTotal: 2423
@@ -140,48 +220,48 @@ components:
         firstName:
           type: string
           description: Имя.
-          pattern: '[a-zA-Z]'
+          pattern: '[a-zA-Z]+'
           minLength: 2
           maxLength: 30
           example: Vasiliy
         lastName:
           type: string
           description: Фамилия.
-          pattern: '[a-zA-Z]'
+          pattern: '[a-zA-Z]+'
           minLength: 2
           maxLength: 30
           example: Pupkin
         middleName:
           type: string
           description: Отчество.
-          pattern: '[a-zA-Z]'
+          pattern: '[a-zA-Z]+'
           example: Ulukbekovich
           minLength: 2
           maxLength: 30
         email:
           type: string
           description: Электронная почта.
-          pattern: '[\w\.]{2,50}@[\w\.]'
+          pattern: '[\w\.]{2,50}@[\w\.]+'
           minLength: 7
           maxLength: 80
           format: email
           example: vasyapoop@ulukbek.ru
         birthdate:
-          type: string
-          format: date
+          type: date
+          format: YYYY-MM-DD
           description: Дата рождения.
           example: '1998-04-28'
         passportSeries:
           type: string
           description: Серия паспорта.
-          pattern: '[\d]'
+          pattern: '[0-9]+'
           minLength: 4
           maxLength: 4
           example: '2467'
         passportNumber:
           type: string
           description: Номер паспорта.
-          pattern: '[\d]'
+          pattern: '[0-9]+'
           minLength: 6
           maxLength: 6
           example: '567321'
@@ -262,8 +342,8 @@ components:
           format: int32
           description: Номер платежа.
         date:
-          type: string
-          format: date
+          type: date
+          format: YYYY-MM-DD
           description: Дата платежа.
         totalPayment:
           type: number
@@ -289,7 +369,7 @@ components:
       x-examples:
         Пример статуса работника:
           employmentStatus: EMPLOYED
-          employerINN: '49993302030'
+          employerINN: '499933020304'
           salary: 44000.33
           position: WORKER
           workExperienceTotal: 5343
@@ -305,12 +385,18 @@ components:
             - SELF_EMPLOYED
             - BUSINESS_OWNER
           description: Статус трудоустройства.
+          example: SELF_EMPLOYED
         employerINN:
           type: string
           description: ИНН работника.
+          pattern: '[0-9]+'
+          minLength: 10
+          maxLength: 12
+          example: '123456789012'
         salary:
           type: number
           description: Зарплата.
+          example: 45000.34
         position:
           type: string
           enum:
@@ -319,14 +405,17 @@ components:
             - TOP_MANAGER
             - OWNER
           description: Должность.
+          example: OWNER
         workExperienceTotal:
           type: integer
           format: int32
           description: Общий трудовой стаж.
+          example: 34
         workExperienceCurrent:
           type: integer
           format: int32
           description: Трудовой стаж на текущем рабочем месте.
+          example: 10
       required:
         - employmentStatus
         - employerINN
@@ -353,7 +442,7 @@ components:
           dependentAmount: 0
           employment:
             employmentStatus: Employed
-            employerINN: string
+            employerINN: 443202304283
             salary: 34566
             position: Worker
             workExperienceTotal: 30
@@ -378,21 +467,21 @@ components:
         firstName:
           type: string
           description: Имя.
-          pattern: '[a-zA-Z]'
+          pattern: '[a-zA-Z]+'
           example: Vasiliy
           minLength: 2
           maxLength: 30
         lastName:
           type: string
           description: Фамилия.
-          pattern: '[a-zA-Z]'
+          pattern: '[a-zA-Z]+'
           minLength: 2
           maxLength: 30
           example: Pupkin
         middleName:
           type: string
           description: Отчество.
-          pattern: '[a-zA-Z]'
+          pattern: '[a-zA-Z]+'
           minLength: 2
           maxLength: 30
           example: Ulukbekovich
@@ -404,8 +493,8 @@ components:
             - NON_BINARY
           description: Пол.
         birthdate:
-          type: string
-          format: date
+          type: date
+          format: YYYY-MM-DD
           description: Дата рождения.
           example: '1990-04-23'
         passportSeries:
@@ -413,18 +502,18 @@ components:
           description: Серия паспорта.
           minLength: 4
           maxLength: 4
-          pattern: '[\d]'
+          pattern: '[0-9]+'
           example: '4523'
         passportNumber:
           type: string
           description: Номер паспорта.
-          pattern: '[\d]'
+          pattern: '[0-9]+'
           minLength: 6
           maxLength: 6
           example: '234222'
         passportIssueDate:
-          type: string
-          format: date
+          type: date
+          format: YYYY-MM-DD
           description: Дата выдачи паспорта.
           example: '2008-12-30'
         passportIssueBranch:
@@ -447,7 +536,8 @@ components:
         account:
           type: string
           description: Номер счёта.
-          pattern: '[\d]'
+          pattern: '[0-9]+'
+          example: '23424275349538'
         isInsuranceEnabled:
           type: boolean
           description: Есть ли страховка?
@@ -475,20 +565,50 @@ components:
       type: object
       x-examples:
         Пример данных о кредите.:
-          amount: 12345.67
-          term: 12345
-          monthlyPayment: 6789.01
-          rate: 6.9
-          psk: 1234.67
+          amount: 30000
+          term: 6
+          monthlyPayment: 5235.91
+          rate: 16
+          psk: 16.92
           isInsuranceEnabled: false
           isSalaryClient: true
           paymentSchedule:
-            - number: 353
-              date: '2019-08-24'
-              totalPayment: 23424.88
-              interestPayment: 234234.7
-              debtPayment: 5353.5
-              remainingDebt: 24324.46
+            - number: 1
+              date: '2022-06-18'
+              totalPayment: 5235.91
+              interestPayment: 400
+              debtPayment: 4835.91
+              remainingDebt: 25164.09
+            - number: 2
+              date: '2022-07-18'
+              totalPayment: 5235.91
+              interestPayment: 335.52
+              debtPayment: 4900.39
+              remainingDebt: 20263.7
+            - number: 3
+              date: '2022-08-18'
+              totalPayment: 5235.91
+              interestPayment: 270.18
+              debtPayment: 4965.73
+              remainingDebt: 15297.97
+            - number: 4
+              date: '2022-09-18'
+              totalPayment: 5235.91
+              interestPayment: 203.97
+              debtPayment: 5031.94
+              remainingDebt: 10266.03
+            - number: 5
+              date: '2022-10-18'
+              totalPayment: 5235.91
+              interestPayment: 136.88
+              debtPayment: 5099.03
+              remainingDebt: 5167
+            - number: 6
+              date: '2022-11-18'
+              totalPayment: 5235.89
+              interestPayment: 68.89
+              debtPayment: 5167
+              remainingDebt: 0
       properties:
         amount:
           type: number
@@ -597,4 +717,39 @@ components:
   securitySchemes: {}
   examples: {}
   parameters: {}
-  responses: {}
+  responses:
+    LoanErrorResponse:
+      description: Ответ на неправильный запрос для расчёта кредита.
+      content:
+        application/json:
+          schema:
+            type: array
+            x-examples:
+              example-1:
+                - problemFieldName: term
+                  rejectedValue: '2'
+                  problemMessage: должно быть больше или равно 6
+                - problemFieldName: passportSeries
+                  rejectedValue: '23526'
+                  problemMessage: размер должен быть между 4 и 4
+            items:
+              type: object
+              properties:
+                problemFieldName:
+                  type: string
+                  description: 'Название поля, в котором возникла проблема.'
+                rejectedValue:
+                  type: string
+                  description: 'Значение в поле, которое было отклонено.'
+                problemMessage:
+                  type: string
+                  description: Суть проблемы.
+          examples:
+            Пример ответа на неправильный запрос.:
+              value:
+                - problemFieldName: term
+                  rejectedValue: '2'
+                  problemMessage: должно быть больше или равно 6
+                - problemFieldName: passportSeries
+                  rejectedValue: '23526'
+                  problemMessage: размер должен быть между 4 и 4

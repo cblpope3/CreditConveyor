@@ -1,8 +1,9 @@
 package ru.leonov.conveyor.config;
 
-import io.swagger.annotations.ApiOperation;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.spi.DocumentationType;
@@ -19,8 +20,9 @@ public class SwaggerConfig {
         return new Docket(DocumentationType.SWAGGER_2)
                 .useDefaultResponseMessages(false)
                 .select()
-                .apis(RequestHandlerSelectors.withMethodAnnotation(ApiOperation.class))
-                .paths(PathSelectors.any())
+                .apis(RequestHandlerSelectors.withClassAnnotation(RestController.class))
+                .apis(RequestHandlerSelectors.withMethodAnnotation(RequestMapping.class))
+                .paths(PathSelectors.ant("/conveyor/*"))
                 .build();
     }
 }

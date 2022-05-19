@@ -34,34 +34,36 @@ class ConveyorCalculationControllerTest {
     @Test
     void postConveyorCalculation() throws Exception {
 
-        when(scoringService.calculateCredit(LoanCalculationTestData.getFineLoanCalculationRequest()))
-                .thenReturn(LoanCalculationTestData.getFineLoanCalculationResponse());
+        when(scoringService.calculateCredit(LoanCalculationTestData.getFineLoanCalculationRequestObject()))
+                .thenReturn(LoanCalculationTestData.getFineLoanCalculationResponseObject());
 
-        this.mockMvc.perform(post("/conveyor/calculation")
+        String expectedResponse = LoanCalculationTestData.getFineLoanCalculationResponseJSON();
+
+        mockMvc.perform(post("/conveyor/calculation")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(LoanCalculationTestData.getFineLoanCalculationRequestJSON()))
+                        .content(LoanCalculationTestData.getExampleLoanCalculationRequestJSON()))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(content().json(LoanCalculationTestData.getFineLoanCalculationResponseJSON()));
+                .andExpect(content().json(expectedResponse));
 
         verify(scoringService, times(1))
-                .calculateCredit(LoanCalculationTestData.getFineLoanCalculationRequest());
+                .calculateCredit(LoanCalculationTestData.getFineLoanCalculationRequestObject());
     }
 
     //testing bad request response
     @Test
     void postConveyorCalculationException() throws Exception {
 
-        when(scoringService.calculateCredit(LoanCalculationTestData.getFineLoanCalculationRequest()))
+        when(scoringService.calculateCredit(LoanCalculationTestData.getFineLoanCalculationRequestObject()))
                 .thenThrow(new ScoringException(ScoringException.ExceptionCause.UNACCEPTABLE_EMPLOYER_STATUS));
 
         this.mockMvc.perform(post("/conveyor/calculation")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(LoanCalculationTestData.getFineLoanCalculationRequestJSON()))
+                        .content(LoanCalculationTestData.getExampleLoanCalculationRequestJSON()))
                 .andDo(print())
                 .andExpect(status().isNoContent());
 
         verify(scoringService, times(1))
-                .calculateCredit(LoanCalculationTestData.getFineLoanCalculationRequest());
+                .calculateCredit(LoanCalculationTestData.getFineLoanCalculationRequestObject());
     }
 }

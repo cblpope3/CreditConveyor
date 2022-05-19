@@ -70,6 +70,17 @@
             <version>${swagger.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+            <version>2.0.1.Final</version>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <version>6.0.13.Final</version>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -114,27 +125,18 @@
                             </inputSpec>
                             <generatorName>spring</generatorName>
                             <configOptions>
-                                <artifactDescription>Test API</artifactDescription>
-                                <artifactId>openapi-spring</artifactId>
-                                <artifactVersion>0.0.1</artifactVersion>
-                                <dateLibrary>java8-localdatetime</dateLibrary>
+                                <dateLibrary>java8</dateLibrary>
                                 <developerName>Leonov Nick</developerName>
                                 <developerOrganization>neoflex</developerOrganization>
                                 <developerOrganizationUrl>https://www.mockedsite.ru/</developerOrganizationUrl>
-                                <disableHtmlEscaping>true</disableHtmlEscaping>
-                                <hideGenerationTimestamp>true</hideGenerationTimestamp>
                                 <interfaceOnly>true</interfaceOnly>
                                 <apiPackage>ru.leonov.conveyor.controller</apiPackage>
                                 <modelPackage>ru.leonov.conveyor.dto</modelPackage>
-                                <skipDefaultInterface>true</skipDefaultInterface>
-                                <serializableModel>true</serializableModel>
-                                <snapshotVersion>true</snapshotVersion>
-                                <sortModelPropertiesByRequiredFlag>false</sortModelPropertiesByRequiredFlag>
-                                <sortParamsByRequiredFlag>false</sortParamsByRequiredFlag>
                                 <sourceFolder>src/main/java</sourceFolder>
-                                <useBeanValidation>false</useBeanValidation>
-                                <useTags>true</useTags>
                                 <openApiNullable>false</openApiNullable>
+                                <typeMappings>
+                                    <typeMapping>date=java.time.LocalDate</typeMapping>
+                                </typeMappings>
                             </configOptions>
                             <additionalProperties>
                                 <additionalProperty>modelNameSuffix=DTO</additionalProperty>

@@ -2,16 +2,22 @@ package ru.leonov.conveyor.test_data;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.Getter;
 import ru.leonov.conveyor.dto.CreditDTO;
+import ru.leonov.conveyor.dto.PaymentScheduleElementDTO;
 import ru.leonov.conveyor.dto.ScoringDataDTO;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 public class LoanCalculationTestData {
 
     //this json is copied from openapi spec example.
     @Getter
-    private static final String fineLoanCalculationRequestJSON = """
+    private static final String exampleLoanCalculationRequestJSON = """
             {
               "amount": 30000,
               "term": 12,
@@ -41,7 +47,7 @@ public class LoanCalculationTestData {
 
     //this json is copied from openapi spec example.
     @Getter
-    private static final String fineLoanCalculationResponseJSON = """
+    private static final String exampleLoanCalculationResponseJSON = """
             {
                  "amount": 30000,
                  "term": 12,
@@ -150,29 +156,86 @@ public class LoanCalculationTestData {
                  ]
              }""";
 
-    public static ScoringDataDTO getFineLoanCalculationRequest() {
+    /**
+     * Get filled with correct data {@link ScoringDataDTO} object. Can be used as test request for
+     * credit calculation service. Correct response must be {@link #getFineLoanCalculationResponseObject()}.
+     *
+     * @return data for scoring that is generated from example json.
+     * @see #getFineLoanCalculationResponseObject()
+     */
+    public static ScoringDataDTO getFineLoanCalculationRequestObject() {
 
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
 
         try {
-            return mapper.readValue(fineLoanCalculationRequestJSON, ScoringDataDTO.class);
+            return mapper.readValue(exampleLoanCalculationRequestJSON, ScoringDataDTO.class);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             throw new IllegalArgumentException("Cant parse json");
         }
     }
 
-    public static CreditDTO getFineLoanCalculationResponse() {
+    /**
+     * Get filled with correct data {@link CreditDTO} object. Can be used as test request for
+     * credit calculation service. Correct request to get this response is {@link #getFineLoanCalculationRequestObject()}.
+     * <b>Dates in payments schedule will be as if loan had been retrieved today.</b>
+     *
+     * @return calculated credit data that is generated from example json <b>from current date</b>.
+     * @see #getFineLoanCalculationRequestObject() ()
+     */
+    public static CreditDTO getFineLoanCalculationResponseObject() {
 
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
 
         try {
-            return mapper.readValue(fineLoanCalculationResponseJSON, CreditDTO.class);
+            CreditDTO calculationResponse = mapper.readValue(exampleLoanCalculationResponseJSON, CreditDTO.class);
+
+            //replacing dates in payment schedule with today dates.
+            calculationResponse.setPaymentSchedule(
+                    replacePaymentDatesFromToday(calculationResponse.getPaymentSchedule())
+            );
+
+            return calculationResponse;
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             throw new IllegalArgumentException("Cant parse json");
         }
+    }
+
+    /**
+     * Method returns {@link #getFineLoanCalculationResponseObject()} as JSON.
+     *
+     * @return json object for testing purposes.
+     * @see #getFineLoanCalculationResponseObject()
+     */
+    public static String getFineLoanCalculationResponseJSON() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+        try {
+            return mapper.writeValueAsString(getFineLoanCalculationResponseObject());
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw new IllegalArgumentException("Cant parse json");
+        }
+    }
+
+    /**
+     * Method take {@link List} of {@link PaymentScheduleElementDTO} and replaces dates of payments as if loan had
+     * been started today.
+     *
+     * @param sourceSchedule payment schedule with incorrect dates.
+     * @return payment schedule that starting from today.
+     */
+    private static List<PaymentScheduleElementDTO> replacePaymentDatesFromToday(List<PaymentScheduleElementDTO> sourceSchedule) {
+        List<PaymentScheduleElementDTO> scheduleFromToday = new ArrayList<>();
+        for (int i = 0; i < sourceSchedule.size(); i++) {
+            PaymentScheduleElementDTO payment = sourceSchedule.get(i);
+            payment.setDate(LocalDate.now().plusMonths(i + 1));
+            scheduleFromToday.add(payment);
+        }
+        return scheduleFromToday;
     }
 }
