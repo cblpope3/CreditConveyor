@@ -90,7 +90,7 @@ public class CreditCalculationService {
                     .multiply(BigDecimal.valueOf(LoanOfferDTO.getTerm()), MathContext.DECIMAL64)
                     .add(paymentForInsurance));
         }
-        if (log.isTraceEnabled()) log.trace("Generated offers: {}, {}, {}, {}",
+        log.trace("Generated offers: {}, {}, {}, {}",
                 resultList.get(0).toString(),
                 resultList.get(1).toString(),
                 resultList.get(2).toString(),
@@ -111,7 +111,7 @@ public class CreditCalculationService {
     public CreditDTO calculateCredit(BigDecimal creditAmount, BigDecimal creditRate, int creditTerm,
                                      boolean isInsuranceEnabled, boolean isSalaryClient) {
 
-        if (log.isTraceEnabled()) log.trace("Generating {} roubles {}% credit for {} months.",
+        log.trace("Generating {} roubles {}% credit for {} months.",
                 creditAmount, creditRate, creditRate);
 
         CreditDTO credit = new CreditDTO();
@@ -134,7 +134,7 @@ public class CreditCalculationService {
         credit.setPaymentSchedule(paymentSchedule);
         credit.setPsk(psk);
 
-        if (log.isTraceEnabled()) log.trace("Credit generated: {}", credit);
+        log.trace("Credit generated: {}", credit);
 
         return credit;
     }
@@ -337,7 +337,7 @@ public class CreditCalculationService {
         // monthlyCreditRate — ставка процента за один месяц
         // creditTerm — срок кредитования.
 
-        if (log.isTraceEnabled()) log.trace("Calculating monthly payment for {} roubles {}% credit for {} months.",
+        log.trace("Calculating monthly payment for {} roubles {}% credit for {} months.",
                 creditAmount, yearlyCreditRate, creditTerm);
 
         //calculating monthlyCreditRate
@@ -357,7 +357,7 @@ public class CreditCalculationService {
                         monthlyCreditRate.add(partialResult, MathContext.DECIMAL64), MathContext.DECIMAL64)
                 .setScale(2, RoundingMode.HALF_UP);
 
-        if (log.isTraceEnabled()) log.trace("Calculated monthly payment is {} roubles.", monthlyPayment);
+        log.trace("Calculated monthly payment is {} roubles.", monthlyPayment);
 
         return monthlyPayment;
     }

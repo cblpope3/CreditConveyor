@@ -41,14 +41,14 @@ public class ConveyorController implements ConveyorApi {
     @Override
     public ResponseEntity<CreditDTO> postConveyorCalculation(ScoringDataDTO scoringDataDTO) {
 
-        if (log.isDebugEnabled()) log.debug("Got /conveyor/calculation request.");
+        log.debug("Got /conveyor/calculation request.");
 
         try {
             CreditDTO credit = scoringService.calculateCredit(scoringDataDTO);
-            if (log.isDebugEnabled()) log.debug("Credit calculated, returning response.");
+            log.debug("Credit calculated, returning response.");
             return new ResponseEntity<>(credit, HttpStatus.OK);
         } catch (ScoringException e) {
-            if (log.isDebugEnabled()) log.debug("Credit denied. Reason: {}", e.getMessage());
+            log.debug("Credit denied. Reason: {}", e.getMessage());
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
     }
@@ -58,10 +58,10 @@ public class ConveyorController implements ConveyorApi {
      */
     @Override
     public ResponseEntity<List<LoanOfferDTO>> postConveyorOffers(LoanApplicationRequestDTO loanApplicationRequestDTO) {
-        if (log.isDebugEnabled()) log.debug("got post conveyor offers request");
+        log.debug("got post conveyor offers request");
 
         List<LoanOfferDTO> possibleCreditOffers = preScoringService.getCreditOfferList(loanApplicationRequestDTO);
-        if (log.isDebugEnabled()) log.debug("Returning response to request.");
+        log.debug("Returning response to request.");
         return new ResponseEntity<>(possibleCreditOffers, HttpStatus.OK);
 
     }

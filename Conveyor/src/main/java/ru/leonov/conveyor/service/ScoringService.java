@@ -76,7 +76,7 @@ public class ScoringService {
      */
     private BigDecimal calculateRate(ScoringDataDTO scoringData) throws ScoringException {
 
-        if (log.isTraceEnabled()) log.trace("Calculating credit rate. Base rate is {}.", baseRate);
+        log.trace("Calculating credit rate. Base rate is {}.", baseRate);
 
         BigDecimal resultRate = baseRate;
 
@@ -89,7 +89,7 @@ public class ScoringService {
                 scoringData.getEmployment().getWorkExperienceTotal(),
                 scoringData.getEmployment().getWorkExperienceCurrent()));
 
-        if (log.isDebugEnabled()) log.debug("Credit rate is calculated: {}.", resultRate);
+        log.debug("Credit rate is calculated: {}.", resultRate);
 
         return resultRate;
     }
@@ -113,22 +113,22 @@ public class ScoringService {
         } else if (employmentStatus.equals(EmploymentDTO.EmploymentStatusEnum.SELF_EMPLOYED)) {
             // Самозанятый → ставка увеличивается на 1
             resultCorrection = resultCorrection.add(BigDecimal.ONE);
-            if (log.isTraceEnabled()) log.trace("Credit rate is increased by 1 because self-employed.");
+            log.trace("Credit rate is increased by 1 because self-employed.");
         } else if (employmentStatus.equals(EmploymentDTO.EmploymentStatusEnum.BUSINESS_OWNER)) {
             // Владелец бизнеса → ставка увеличивается на 3
             resultCorrection = resultCorrection.add(BigDecimal.valueOf(3));
-            if (log.isTraceEnabled()) log.trace("Credit rate is increased by 3 because business owner.");
+            log.trace("Credit rate is increased by 3 because business owner.");
         }
 
         if (jobPosition.equals(EmploymentDTO.PositionEnum.MID_MANAGER)) {
             // Менеджер среднего звена → ставка уменьшается на 2
             resultCorrection = resultCorrection.subtract(BigDecimal.valueOf(2));
-            if (log.isTraceEnabled()) log.trace("Credit rate is decreased by 2 because mid-manager.");
+            log.trace("Credit rate is decreased by 2 because mid-manager.");
 
         } else if (jobPosition.equals(EmploymentDTO.PositionEnum.TOP_MANAGER)) {
             // Топ-менеджер → ставка уменьшается на 4
             resultCorrection = resultCorrection.subtract(BigDecimal.valueOf(4));
-            if (log.isTraceEnabled()) log.trace("Credit rate is decreased by 4 because top-manager.");
+            log.trace("Credit rate is decreased by 4 because top-manager.");
         }
 
         return resultCorrection;
@@ -163,19 +163,18 @@ public class ScoringService {
 
         if (maritalStatus.equals(ScoringDataDTO.MaritalStatusEnum.MARRIED)) {
             // Замужем/женат → ставка уменьшается на 3
-            if (log.isTraceEnabled()) log.trace("Credit rate is decreased by 3 because married.");
+            log.trace("Credit rate is decreased by 3 because married.");
             resultCorrection = resultCorrection.subtract(BigDecimal.valueOf(3));
         } else if (maritalStatus.equals(ScoringDataDTO.MaritalStatusEnum.DIVORCED)) {
             // Разведен → ставка увеличивается на 1
-            if (log.isTraceEnabled()) log.trace("Credit rate is increased by 1 because divorced.");
+            log.trace("Credit rate is increased by 1 because divorced.");
             resultCorrection = resultCorrection.add(BigDecimal.ONE);
         }
 
         if (dependentAmount > PREFERRED_DEPENDENT_AMOUNT_MAX) {
             //Количество иждивенцев больше 1 → ставка увеличивается на 1
             resultCorrection = resultCorrection.add(BigDecimal.ONE);
-            if (log.isTraceEnabled())
-                log.trace("Credit rate is increased by 1 because too much dependent persons.");
+            log.trace("Credit rate is increased by 1 because too much dependent persons.");
         }
 
         return resultCorrection;
@@ -194,7 +193,7 @@ public class ScoringService {
         BigDecimal resultCorrection = BigDecimal.ZERO;
 
         int age = Period.between(birthday, LocalDate.now()).getYears();
-        if (log.isTraceEnabled()) log.trace("Customers birthday is {}. Calculated age: {}.", birthday, age);
+        log.trace("Customers birthday is {}. Calculated age: {}.", birthday, age);
 
         // Возраст менее 20 или более 60 лет → отказ
         if (age < MIN_LOAN_AGE || age > MAX_LOAN_AGE) {
@@ -205,22 +204,20 @@ public class ScoringService {
                 && age >= MALE_PREFERRED_AGE_MIN && age <= MALE_PREFERRED_AGE_MAX) {
             // Мужчина, возраст от 30 до 55 лет → ставка уменьшается на 3
 
-            if (log.isTraceEnabled())
-                log.trace("Credit rate is decreased by 3 because male with fine age.");
+            log.trace("Credit rate is decreased by 3 because male with fine age.");
             resultCorrection = resultCorrection.subtract(BigDecimal.valueOf(3));
 
         } else if (gender.equals(ScoringDataDTO.GenderEnum.FEMALE)
                 && age >= FEMALE_PREFERRED_AGE_MIN && age <= FEMALE_PREFERRED_AGE_MAX) {
             // Женщина, возраст от 35 до 60 лет → ставка уменьшается на 3
 
-            if (log.isTraceEnabled())
-                log.trace("Credit rate is decreased by 3 because female with fine age.");
+            log.trace("Credit rate is decreased by 3 because female with fine age.");
             resultCorrection = resultCorrection.subtract(BigDecimal.valueOf(3));
 
         } else if (gender.equals(ScoringDataDTO.GenderEnum.NON_BINARY)) {
             // Небинарный → ставка увеличивается на 3
 
-            if (log.isTraceEnabled()) log.trace("Credit rate is increased by 3 because non-binary person.");
+            log.trace("Credit rate is increased by 3 because non-binary person.");
             resultCorrection = resultCorrection.add(BigDecimal.valueOf(3));
 
         }
