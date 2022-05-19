@@ -72,11 +72,11 @@ public class CreditCalculationService {
             BigDecimal paymentForInsurance = BigDecimal.ZERO;
 
             //calculating current rate depending on base rate and booleans
-            if (Boolean.TRUE.equals(LoanOfferDTO.getIsInsuranceEnabled())) {
+            if (LoanOfferDTO.getIsInsuranceEnabled()) {
                 LoanOfferDTO.setRate(LoanOfferDTO.getRate().subtract(BigDecimal.ONE));
                 paymentForInsurance = INSURANCE_COST;
             }
-            if (Boolean.TRUE.equals(LoanOfferDTO.getIsSalaryClient()))
+            if (LoanOfferDTO.getIsSalaryClient())
                 LoanOfferDTO.setRate(LoanOfferDTO.getRate().subtract(BigDecimal.valueOf(3)));
 
             //calculating monthly payment
