@@ -51,20 +51,13 @@ class CalculateCreditTest {
         assertTrue(creditSchedulesAreEqual(calculatedCredit.getPaymentSchedule(), expectedCredit.getPaymentSchedule()));
     }
 
-//    private boolean creditsAreEqual(CreditDTO credit1, CreditDTO credit2) {
-//
-//        return
-//                credit1.getAmount().compareTo(credit2.getAmount()) == 0 &&
-//                        credit1.getMonthlyPayment().compareTo(credit2.getMonthlyPayment()) == 0 &&
-//                        credit1.getRate().compareTo(credit2.getRate()) == 0 &&
-//                        credit1.getPsk().compareTo(credit2.getPsk()) == 0 &&
-//                        credit1.getTerm().equals(credit2.getTerm()) &&
-//                        credit1.getIsInsuranceEnabled().equals(credit2.getIsInsuranceEnabled()) &&
-//                        credit1.getIsSalaryClient().equals(credit2.getIsSalaryClient()) &&
-//                        creditSchedulesAreEqual(credit1.getPaymentSchedule(), credit2.getPaymentSchedule());
-//
-//    }
-
+    /**
+     * Method checks that two given credit payment schedules are equal.
+     *
+     * @param paymentSchedule1 credit payment schedule 1.
+     * @param paymentSchedule2 credit payment schedule 2.
+     * @return true if given arguments are equal, false otherwise.
+     */
     private boolean creditSchedulesAreEqual(List<PaymentScheduleElementDTO> paymentSchedule1,
                                             List<PaymentScheduleElementDTO> paymentSchedule2) {
 
