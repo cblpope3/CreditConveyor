@@ -90,13 +90,16 @@ class ScoringServiceTest {
     @Value("${app-params.baseRate}")
     double BASE_RATE;
 
+    @SuppressWarnings("unused")
     @Autowired
     private ScoringService scoringService;
+
     private ScoringDataDTO baseRateScoringRequest = new ScoringDataDTO();
 
     @BeforeEach
     void SetUp() {
 
+        //Before each of test, generating request that is expected to produce base credit rate after scoring.
         baseRateScoringRequest = LoanCalculationTestData.getFineLoanCalculationRequestObject();
 
         baseRateScoringRequest.setGender(ScoringDataDTO.GenderEnum.MALE);
@@ -118,267 +121,204 @@ class ScoringServiceTest {
 
     //testing not affected fine request. expecting that calculated rate is equal to base rate
     @Test
-    void calculateCreditRate() {
+    void calculateCreditRate() throws ScoringException {
 
         BigDecimal expectedRate = BigDecimal.valueOf(BASE_RATE);
-        BigDecimal calculatedRate;
-
-        try {
-            calculatedRate = scoringService.calculateRate(baseRateScoringRequest);
-        } catch (ScoringException e) {
-            e.printStackTrace();
-            throw new IllegalArgumentException("Got unexpected scoring exception!");
-        }
+        BigDecimal calculatedRate = scoringService.calculateRate(baseRateScoringRequest);
 
         assertEquals(0, calculatedRate.compareTo(expectedRate));
     }
 
     // Мужчина, возраст от 30 до 55 лет → ставка уменьшается на 3
     @Test
-    void calculateCreditRateMaleFineAge() {
+    void calculateCreditRateMaleFineAge() throws ScoringException {
         //testing four cases to inspect all possible boundary conditions
 
-        BigDecimal expectedRate = BigDecimal.valueOf(BASE_RATE + MALE_PREFERRED_AGE_CORRECTION);
+        BigDecimal expectedRateWithinFineAge = BigDecimal.valueOf(BASE_RATE + MALE_PREFERRED_AGE_CORRECTION);
+        BigDecimal expectedRateOutOfFineAge = BigDecimal.valueOf(BASE_RATE);
 
         baseRateScoringRequest.setGender(ScoringDataDTO.GenderEnum.MALE);
 
         BigDecimal calculatedRate;
 
-        try {
+        //---tests of male within fine age
+        //testing minimum fine male age
+        baseRateScoringRequest.setBirthdate(LocalDate.now().minusYears(MALE_PREFERRED_AGE_MIN));
+        calculatedRate = scoringService.calculateRate(baseRateScoringRequest);
+        assertEquals(0, calculatedRate.compareTo(expectedRateWithinFineAge));
 
-            //testing minimum fine male age
-            baseRateScoringRequest.setBirthdate(LocalDate.now().minusYears(MALE_PREFERRED_AGE_MIN));
-            calculatedRate = scoringService.calculateRate(baseRateScoringRequest);
-            assertEquals(0, calculatedRate.compareTo(expectedRate));
-
-            //testing maximum fine male age
-            baseRateScoringRequest.setBirthdate(LocalDate.now().minusYears(MALE_PREFERRED_AGE_MAX));
-            calculatedRate = scoringService.calculateRate(baseRateScoringRequest);
-            assertEquals(0, calculatedRate.compareTo(expectedRate));
-
-        } catch (ScoringException e) {
-            throw new IllegalArgumentException("Got unexpected scoring exception!");
-        }
+        //testing maximum fine male age
+        baseRateScoringRequest.setBirthdate(LocalDate.now().minusYears(MALE_PREFERRED_AGE_MAX));
+        calculatedRate = scoringService.calculateRate(baseRateScoringRequest);
+        assertEquals(0, calculatedRate.compareTo(expectedRateWithinFineAge));
 
 
-        expectedRate = BigDecimal.valueOf(BASE_RATE);
+        //---tests of male out of fine age
+        //testing male age less than minimum
+        baseRateScoringRequest.setBirthdate(LocalDate.now().minusYears(MALE_PREFERRED_AGE_MIN - 1));
+        calculatedRate = scoringService.calculateRate(baseRateScoringRequest);
+        assertEquals(0, calculatedRate.compareTo(expectedRateOutOfFineAge));
 
-        try {
-            //testing male age less than minimum
-            baseRateScoringRequest.setBirthdate(LocalDate.now().minusYears(MALE_PREFERRED_AGE_MIN - 1));
-            calculatedRate = scoringService.calculateRate(baseRateScoringRequest);
-            assertEquals(0, calculatedRate.compareTo(expectedRate));
+        //testing male age more than maximum
+        baseRateScoringRequest.setBirthdate(LocalDate.now().minusYears(MALE_PREFERRED_AGE_MAX + 1));
+        calculatedRate = scoringService.calculateRate(baseRateScoringRequest);
+        assertEquals(0, calculatedRate.compareTo(expectedRateOutOfFineAge));
 
-            //testing male age more than maximum
-            baseRateScoringRequest.setBirthdate(LocalDate.now().minusYears(MALE_PREFERRED_AGE_MAX + 1));
-            calculatedRate = scoringService.calculateRate(baseRateScoringRequest);
-            assertEquals(0, calculatedRate.compareTo(expectedRate));
-
-        } catch (ScoringException e) {
-            throw new IllegalArgumentException("Got unexpected scoring exception!");
-        }
     }
 
     // Женщина, возраст от 35 до 60 лет → ставка уменьшается на 3
     @Test
-    void calculateCreditRateFemaleFineAge() {
+    void calculateCreditRateFemaleFineAge() throws ScoringException {
         //testing four cases to inspect all possible boundary conditions
 
         baseRateScoringRequest.setGender(ScoringDataDTO.GenderEnum.FEMALE);
-        BigDecimal expectedRate = BigDecimal.valueOf(BASE_RATE + FEMALE_PREFERRED_AGE_CORRECTION);
+
+        BigDecimal expectedRateWithinFineAge = BigDecimal.valueOf(BASE_RATE + FEMALE_PREFERRED_AGE_CORRECTION);
+        BigDecimal expectedRateOutOfFineAge = BigDecimal.valueOf(BASE_RATE);
+
         BigDecimal calculatedRate;
 
-        try {
+        //testing minimum fine female age
+        baseRateScoringRequest.setBirthdate(LocalDate.now().minusYears(FEMALE_PREFERRED_AGE_MIN));
+        calculatedRate = scoringService.calculateRate(baseRateScoringRequest);
+        assertEquals(0, calculatedRate.compareTo(expectedRateWithinFineAge));
 
-            //testing minimum fine female age
-            baseRateScoringRequest.setBirthdate(LocalDate.now().minusYears(FEMALE_PREFERRED_AGE_MIN));
-            calculatedRate = scoringService.calculateRate(baseRateScoringRequest);
-            assertEquals(0, calculatedRate.compareTo(expectedRate));
+        //testing maximum fine female age
+        baseRateScoringRequest.setBirthdate(LocalDate.now().minusYears(FEMALE_PREFERRED_AGE_MAX));
+        calculatedRate = scoringService.calculateRate(baseRateScoringRequest);
+        assertEquals(0, calculatedRate.compareTo(expectedRateWithinFineAge));
 
-            //testing maximum fine female age
-            baseRateScoringRequest.setBirthdate(LocalDate.now().minusYears(FEMALE_PREFERRED_AGE_MAX));
-            calculatedRate = scoringService.calculateRate(baseRateScoringRequest);
-            assertEquals(0, calculatedRate.compareTo(expectedRate));
 
-        } catch (ScoringException e) {
-            throw new IllegalArgumentException("Got unexpected scoring exception!");
-        }
+        //testing female age less than minimum
+        baseRateScoringRequest.setBirthdate(LocalDate.now().minusYears(FEMALE_PREFERRED_AGE_MIN - 1));
+        calculatedRate = scoringService.calculateRate(baseRateScoringRequest);
+        assertEquals(0, calculatedRate.compareTo(expectedRateOutOfFineAge));
 
-        expectedRate = BigDecimal.valueOf(BASE_RATE);
+        //testing female age more than maximum is impossible because it is out of MAX_LOAN_AGE boundary
 
-        try {
-            //testing female age less than minimum
-            baseRateScoringRequest.setBirthdate(LocalDate.now().minusYears(FEMALE_PREFERRED_AGE_MIN - 1));
-            calculatedRate = scoringService.calculateRate(baseRateScoringRequest);
-            assertEquals(0, calculatedRate.compareTo(expectedRate));
-
-            //testing female age more than maximum is impossible because it is out of MAX_LOAN_AGE boundary
-
-        } catch (ScoringException e) {
-            throw new IllegalArgumentException("Got unexpected scoring exception!");
-        }
     }
 
     // Количество иждивенцев больше 1 → ставка увеличивается на 1
     @Test
-    void calculateCreditRateLotOfDependents() {
+    void calculateCreditRateLotOfDependents() throws ScoringException {
         //testing two possible boundary conditions
 
-        try {
+        BigDecimal expectedRateWithFineDependentNumber = BigDecimal.valueOf(BASE_RATE);
+        BigDecimal expectedRateWithTooMuchDependentNumber = BigDecimal.valueOf(BASE_RATE + DEPENDENT_AMOUNT_CORRECTION);
+        BigDecimal calculatedRate;
 
-            //testing fine dependent amount
-            BigDecimal expectedRate = BigDecimal.valueOf(BASE_RATE);
-            BigDecimal calculatedRate;
-            baseRateScoringRequest.setDependentAmount(PREFERRED_DEPENDENT_AMOUNT_MAX);
-            calculatedRate = scoringService.calculateRate(baseRateScoringRequest);
-            assertEquals(0, calculatedRate.compareTo(expectedRate));
 
-            //testing exceeding of fine dependent amount
-            expectedRate = BigDecimal.valueOf(BASE_RATE + DEPENDENT_AMOUNT_CORRECTION);
-            baseRateScoringRequest.setDependentAmount(PREFERRED_DEPENDENT_AMOUNT_MAX + 1);
-            calculatedRate = scoringService.calculateRate(baseRateScoringRequest);
-            assertEquals(0, calculatedRate.compareTo(expectedRate));
+        //testing fine dependent amount
+        baseRateScoringRequest.setDependentAmount(PREFERRED_DEPENDENT_AMOUNT_MAX);
+        calculatedRate = scoringService.calculateRate(baseRateScoringRequest);
+        assertEquals(0, calculatedRate.compareTo(expectedRateWithFineDependentNumber));
 
-        } catch (ScoringException e) {
-            throw new IllegalArgumentException("Got unexpected scoring exception!");
-        }
+        //testing exceeding of fine dependent amount
+        baseRateScoringRequest.setDependentAmount(PREFERRED_DEPENDENT_AMOUNT_MAX + 1);
+        calculatedRate = scoringService.calculateRate(baseRateScoringRequest);
+        assertEquals(0, calculatedRate.compareTo(expectedRateWithTooMuchDependentNumber));
 
     }
 
     // Самозанятый → ставка увеличивается на 1
     @Test
-    void calculateCreditRateSelfEmployed() {
+    void calculateCreditRateSelfEmployed() throws ScoringException {
 
         BigDecimal expectedRate = BigDecimal.valueOf(BASE_RATE + SELF_EMPLOYED_CORRECTION);
-        BigDecimal calculatedRate;
 
         EmploymentDTO testEmployment = baseRateScoringRequest.getEmployment();
         testEmployment.setEmploymentStatus(EmploymentDTO.EmploymentStatusEnum.SELF_EMPLOYED);
 
         baseRateScoringRequest.setEmployment(testEmployment);
 
-        try {
-            calculatedRate = scoringService.calculateRate(baseRateScoringRequest);
-        } catch (ScoringException e) {
-            throw new IllegalArgumentException("Got unexpected scoring exception!");
-        }
+        BigDecimal calculatedRate = scoringService.calculateRate(baseRateScoringRequest);
 
         assertEquals(0, calculatedRate.compareTo(expectedRate));
     }
 
     // Владелец бизнеса → ставка увеличивается на 3
     @Test
-    void calculateCreditRateBusinessOwner() {
+    void calculateCreditRateBusinessOwner() throws ScoringException {
 
         BigDecimal expectedRate = BigDecimal.valueOf(BASE_RATE + BUSINESS_OWNER_CORRECTION);
-        BigDecimal calculatedRate;
 
         EmploymentDTO testEmployment = baseRateScoringRequest.getEmployment();
         testEmployment.setEmploymentStatus(EmploymentDTO.EmploymentStatusEnum.BUSINESS_OWNER);
 
         baseRateScoringRequest.setEmployment(testEmployment);
 
-        try {
-            calculatedRate = scoringService.calculateRate(baseRateScoringRequest);
-        } catch (ScoringException e) {
-            throw new IllegalArgumentException("Got unexpected scoring exception!");
-        }
+        BigDecimal calculatedRate = scoringService.calculateRate(baseRateScoringRequest);
 
         assertEquals(0, calculatedRate.compareTo(expectedRate));
     }
 
     // Менеджер среднего звена → ставка уменьшается на 2
     @Test
-    void calculateCreditRateMidManager() {
+    void calculateCreditRateMidManager() throws ScoringException {
 
         BigDecimal expectedRate = BigDecimal.valueOf(BASE_RATE + MID_MANAGER_CORRECTION);
-        BigDecimal calculatedRate;
 
         EmploymentDTO testEmployment = baseRateScoringRequest.getEmployment();
         testEmployment.setPosition(EmploymentDTO.PositionEnum.MID_MANAGER);
 
         baseRateScoringRequest.setEmployment(testEmployment);
 
-        try {
-            calculatedRate = scoringService.calculateRate(baseRateScoringRequest);
-        } catch (ScoringException e) {
-            throw new IllegalArgumentException("Got unexpected scoring exception!");
-        }
+        BigDecimal calculatedRate = scoringService.calculateRate(baseRateScoringRequest);
 
         assertEquals(0, calculatedRate.compareTo(expectedRate));
     }
 
     // Топ-менеджер → ставка уменьшается на 4
     @Test
-    void calculateCreditRateTopManager() {
+    void calculateCreditRateTopManager() throws ScoringException {
 
         BigDecimal expectedRate = BigDecimal.valueOf(BASE_RATE + TOP_MANAGER_CORRECTION);
-        BigDecimal calculatedRate;
 
         EmploymentDTO testEmployment = baseRateScoringRequest.getEmployment();
         testEmployment.setPosition(EmploymentDTO.PositionEnum.TOP_MANAGER);
 
         baseRateScoringRequest.setEmployment(testEmployment);
 
-        try {
-            calculatedRate = scoringService.calculateRate(baseRateScoringRequest);
-        } catch (ScoringException e) {
-            throw new IllegalArgumentException("Got unexpected scoring exception!");
-        }
+        BigDecimal calculatedRate = scoringService.calculateRate(baseRateScoringRequest);
 
         assertEquals(0, calculatedRate.compareTo(expectedRate));
     }
 
     // Замужем/женат → ставка уменьшается на 3
     @Test
-    void calculateCreditRateMarried() {
+    void calculateCreditRateMarried() throws ScoringException {
 
         BigDecimal expectedRate = BigDecimal.valueOf(BASE_RATE + MARRIED_CORRECTION);
-        BigDecimal calculatedRate;
 
         baseRateScoringRequest.setMaritalStatus(ScoringDataDTO.MaritalStatusEnum.MARRIED);
 
-        try {
-            calculatedRate = scoringService.calculateRate(baseRateScoringRequest);
-        } catch (ScoringException e) {
-            throw new IllegalArgumentException("Got unexpected scoring exception!");
-        }
+        BigDecimal calculatedRate = scoringService.calculateRate(baseRateScoringRequest);
 
         assertEquals(0, calculatedRate.compareTo(expectedRate));
     }
 
     // Разведен → ставка увеличивается на 1
     @Test
-    void calculateCreditRateDivorced() {
+    void calculateCreditRateDivorced() throws ScoringException {
 
         BigDecimal expectedRate = BigDecimal.valueOf(BASE_RATE + DIVORCED_CORRECTION);
-        BigDecimal calculatedRate;
 
         baseRateScoringRequest.setMaritalStatus(ScoringDataDTO.MaritalStatusEnum.DIVORCED);
 
-        try {
-            calculatedRate = scoringService.calculateRate(baseRateScoringRequest);
-        } catch (ScoringException e) {
-            throw new IllegalArgumentException("Got unexpected scoring exception!");
-        }
+        BigDecimal calculatedRate = scoringService.calculateRate(baseRateScoringRequest);
 
         assertEquals(0, calculatedRate.compareTo(expectedRate));
     }
 
     // Небинарный → ставка увеличивается на 3
     @Test
-    void calculateCreditRateNonBinary() {
+    void calculateCreditRateNonBinary() throws ScoringException {
 
         BigDecimal expectedRate = BigDecimal.valueOf(BASE_RATE + NON_BINARY_CORRECTION);
-        BigDecimal calculatedRate;
 
         baseRateScoringRequest.setGender(ScoringDataDTO.GenderEnum.NON_BINARY);
 
-        try {
-            calculatedRate = scoringService.calculateRate(baseRateScoringRequest);
-        } catch (ScoringException e) {
-            throw new IllegalArgumentException("Got unexpected scoring exception!");
-        }
+        BigDecimal calculatedRate = scoringService.calculateRate(baseRateScoringRequest);
 
         assertEquals(0, calculatedRate.compareTo(expectedRate));
     }
