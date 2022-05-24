@@ -19,33 +19,72 @@ import java.time.Period;
 @Service
 public class ScoringService {
 
-    // Общий стаж менее 12 месяцев → отказ
-    // Текущий стаж менее 3 месяцев → отказ
-    private static final Integer MIN_TOTAL_EXPERIENCE = 12;
-    private static final Integer MIN_CURRENT_EXPERIENCE = 3;
-
-    // Возраст менее 20 или более 60 лет → отказ
-    private static final Integer MIN_LOAN_AGE = 20;
-    private static final Integer MAX_LOAN_AGE = 60;
-
-    // Мужчина, возраст от 30 до 55 лет → ставка уменьшается на 3
-    // Женщина, возраст от 35 до 60 лет → ставка уменьшается на 3
-    private static final Integer MALE_PREFERRED_AGE_MIN = 30;
-    private static final Integer MALE_PREFERRED_AGE_MAX = 55;
-    private static final Integer FEMALE_PREFERRED_AGE_MIN = 35;
-    private static final Integer FEMALE_PREFERRED_AGE_MAX = 60;
-
-    //Количество иждивенцев больше 1 → ставка увеличивается на 1
-    private static final Integer PREFERRED_DEPENDENT_AMOUNT_MAX = 1;
-
-    //Сумма займа больше, чем 20 зарплат → отказ
-    private static final BigDecimal SALARY_TO_LOAN_RATE_LIMIT = BigDecimal.valueOf(20);
-
+    private final BigDecimal salaryToLoanRateLimit;
     private final BigDecimal baseRate;
 
+    @SuppressWarnings("unused")
+    @Value("${app-params.scoring.minTotalExperience}")
+    private Integer minTotalExperience;
+    @SuppressWarnings("unused")
+    @Value("${app-params.scoring.minCurrentExperience}")
+    private Integer minCurrentExperience;
+    @SuppressWarnings("unused")
+    @Value("${app-params.scoring.minLoanAge}")
+    private Integer minLoanAge;
+    @SuppressWarnings("unused")
+    @Value("${app-params.scoring.maxLoanAge}")
+    private Integer maxLoanAge;
+    @SuppressWarnings("unused")
+    @Value("${app-params.scoring.malePreferredAgeMin}")
+    private Integer malePreferredAgeMin;
+    @SuppressWarnings("unused")
+    @Value("${app-params.scoring.malePreferredAgeMax}")
+    private Integer malePreferredAgeMax;
+    @SuppressWarnings("unused")
+    @Value("${app-params.scoring.malePreferredAgeCorrection}")
+    private Double malePreferredAgeCorrection;
+    @SuppressWarnings("unused")
+    @Value("${app-params.scoring.femalePreferredAgeMin}")
+    private Integer femalePreferredAgeMin;
+    @SuppressWarnings("unused")
+    @Value("${app-params.scoring.femalePreferredAgeMax}")
+    private Integer femalePreferredAgeMax;
+    @SuppressWarnings("unused")
+    @Value("${app-params.scoring.femalePreferredAgeCorrection}")
+    private Double femalePreferredAgeCorrection;
+    @SuppressWarnings("unused")
+    @Value("${app-params.scoring.preferredDependentAmountMax}")
+    private Integer preferredDependentAmountMax;
+    @SuppressWarnings("unused")
+    @Value("${app-params.scoring.dependentAmountCorrection}")
+    private Double dependentAmountCorrection;
+    @SuppressWarnings("unused")
+    @Value("${app-params.scoring.selfEmployedCorrection}")
+    private Double selfEmployedCorrection;
+    @SuppressWarnings("unused")
+    @Value("${app-params.scoring.businessOwnerCorrection}")
+    private Double businessOwnerCorrection;
+    @SuppressWarnings("unused")
+    @Value("${app-params.scoring.midManagerCorrection}")
+    private Double midManagerCorrection;
+    @SuppressWarnings("unused")
+    @Value("${app-params.scoring.topManagerCorrection}")
+    private Double topManagerCorrection;
+    @SuppressWarnings("unused")
+    @Value("${app-params.scoring.marriedCorrection}")
+    private Double marriedCorrection;
+    @SuppressWarnings("unused")
+    @Value("${app-params.scoring.divorcedCorrection}")
+    private Double divorcedCorrection;
+    @SuppressWarnings("unused")
+    @Value("${app-params.scoring.nonBinaryCorrection}")
+    private Double nonBinaryCorrection;
+
     @Autowired
-    public ScoringService(@Value("${app-params.baseRate}") double baseRate) {
+    public ScoringService(@Value("${app-params.baseRate}") Double baseRate,
+                          @Value("${app-params.scoring.salaryToLoanRateLimit}") Double salaryToLoanRateLimit) {
         this.baseRate = BigDecimal.valueOf(baseRate);
+        this.salaryToLoanRateLimit = BigDecimal.valueOf(salaryToLoanRateLimit);
     }
 
     /**
@@ -93,22 +132,22 @@ public class ScoringService {
             throw new ScoringException(ScoringException.ExceptionCause.UNACCEPTABLE_EMPLOYER_STATUS);
         } else if (employmentStatus.equals(EmploymentDTO.EmploymentStatusEnum.SELF_EMPLOYED)) {
             // Самозанятый → ставка увеличивается на 1
-            resultCorrection = resultCorrection.add(BigDecimal.ONE);
+            resultCorrection = resultCorrection.add(BigDecimal.valueOf(selfEmployedCorrection));
             log.trace("Credit rate is increased by 1 because self-employed.");
         } else if (employmentStatus.equals(EmploymentDTO.EmploymentStatusEnum.BUSINESS_OWNER)) {
             // Владелец бизнеса → ставка увеличивается на 3
-            resultCorrection = resultCorrection.add(BigDecimal.valueOf(3));
+            resultCorrection = resultCorrection.add(BigDecimal.valueOf(businessOwnerCorrection));
             log.trace("Credit rate is increased by 3 because business owner.");
         }
 
         if (jobPosition.equals(EmploymentDTO.PositionEnum.MID_MANAGER)) {
             // Менеджер среднего звена → ставка уменьшается на 2
-            resultCorrection = resultCorrection.subtract(BigDecimal.valueOf(2));
+            resultCorrection = resultCorrection.add(BigDecimal.valueOf(midManagerCorrection));
             log.trace("Credit rate is decreased by 2 because mid-manager.");
 
         } else if (jobPosition.equals(EmploymentDTO.PositionEnum.TOP_MANAGER)) {
             // Топ-менеджер → ставка уменьшается на 4
-            resultCorrection = resultCorrection.subtract(BigDecimal.valueOf(4));
+            resultCorrection = resultCorrection.add(BigDecimal.valueOf(topManagerCorrection));
             log.trace("Credit rate is decreased by 4 because top-manager.");
         }
 
@@ -124,7 +163,7 @@ public class ScoringService {
      * @throws ScoringException if clients salary is insufficient to get credit.
      */
     private BigDecimal getSalaryCorrection(BigDecimal creditAmount, BigDecimal salary) throws ScoringException {
-        if (creditAmount.compareTo(salary.multiply(SALARY_TO_LOAN_RATE_LIMIT)) > 0) {
+        if (creditAmount.compareTo(salary.multiply(salaryToLoanRateLimit)) > 0) {
             //Сумма займа больше, чем 20 зарплат → отказ
             throw new ScoringException(ScoringException.ExceptionCause.INSUFFICIENT_SALARY);
         }
@@ -145,16 +184,16 @@ public class ScoringService {
         if (maritalStatus.equals(ScoringDataDTO.MaritalStatusEnum.MARRIED)) {
             // Замужем/женат → ставка уменьшается на 3
             log.trace("Credit rate is decreased by 3 because married.");
-            resultCorrection = resultCorrection.subtract(BigDecimal.valueOf(3));
+            resultCorrection = resultCorrection.add(BigDecimal.valueOf(marriedCorrection));
         } else if (maritalStatus.equals(ScoringDataDTO.MaritalStatusEnum.DIVORCED)) {
             // Разведен → ставка увеличивается на 1
             log.trace("Credit rate is increased by 1 because divorced.");
-            resultCorrection = resultCorrection.add(BigDecimal.ONE);
+            resultCorrection = resultCorrection.add(BigDecimal.valueOf(divorcedCorrection));
         }
 
-        if (dependentAmount > PREFERRED_DEPENDENT_AMOUNT_MAX) {
+        if (dependentAmount > preferredDependentAmountMax) {
             //Количество иждивенцев больше 1 → ставка увеличивается на 1
-            resultCorrection = resultCorrection.add(BigDecimal.ONE);
+            resultCorrection = resultCorrection.add(BigDecimal.valueOf(dependentAmountCorrection));
             log.trace("Credit rate is increased by 1 because too much dependent persons.");
         }
 
@@ -177,29 +216,29 @@ public class ScoringService {
         log.trace("Customers birthday is {}. Calculated age: {}.", birthday, age);
 
         // Возраст менее 20 или более 60 лет → отказ
-        if (age < MIN_LOAN_AGE || age > MAX_LOAN_AGE) {
+        if (age < minLoanAge || age > maxLoanAge) {
 
             throw new ScoringException(ScoringException.ExceptionCause.UNACCEPTABLE_AGE);
 
         } else if (gender.equals(ScoringDataDTO.GenderEnum.MALE)
-                && age >= MALE_PREFERRED_AGE_MIN && age <= MALE_PREFERRED_AGE_MAX) {
+                && age >= malePreferredAgeMin && age <= malePreferredAgeMax) {
             // Мужчина, возраст от 30 до 55 лет → ставка уменьшается на 3
 
             log.trace("Credit rate is decreased by 3 because male with fine age.");
-            resultCorrection = resultCorrection.subtract(BigDecimal.valueOf(3));
+            resultCorrection = resultCorrection.add(BigDecimal.valueOf(malePreferredAgeCorrection));
 
         } else if (gender.equals(ScoringDataDTO.GenderEnum.FEMALE)
-                && age >= FEMALE_PREFERRED_AGE_MIN && age <= FEMALE_PREFERRED_AGE_MAX) {
+                && age >= femalePreferredAgeMin && age <= femalePreferredAgeMax) {
             // Женщина, возраст от 35 до 60 лет → ставка уменьшается на 3
 
             log.trace("Credit rate is decreased by 3 because female with fine age.");
-            resultCorrection = resultCorrection.subtract(BigDecimal.valueOf(3));
+            resultCorrection = resultCorrection.add(BigDecimal.valueOf(femalePreferredAgeCorrection));
 
         } else if (gender.equals(ScoringDataDTO.GenderEnum.NON_BINARY)) {
             // Небинарный → ставка увеличивается на 3
 
             log.trace("Credit rate is increased by 3 because non-binary person.");
-            resultCorrection = resultCorrection.add(BigDecimal.valueOf(3));
+            resultCorrection = resultCorrection.add(BigDecimal.valueOf(nonBinaryCorrection));
 
         }
 
@@ -218,7 +257,7 @@ public class ScoringService {
         // Стаж работы:
         // Общий стаж менее 12 месяцев → отказ
         // Текущий стаж менее 3 месяцев → отказ
-        if (totalExperience < MIN_TOTAL_EXPERIENCE || currentExperience < MIN_CURRENT_EXPERIENCE) {
+        if (totalExperience < minTotalExperience || currentExperience < minCurrentExperience) {
             throw new ScoringException(ScoringException.ExceptionCause.INSUFFICIENT_EXPERIENCE);
         }
 

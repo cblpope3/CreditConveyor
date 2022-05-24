@@ -2,8 +2,9 @@ package ru.leonov.conveyor.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.SpringBootTest;
 import ru.leonov.conveyor.dto.EmploymentDTO;
 import ru.leonov.conveyor.dto.ScoringDataDTO;
 import ru.leonov.conveyor.exceptions.ScoringException;
@@ -15,67 +16,86 @@ import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@ExtendWith(SpringExtension.class)
+@SpringBootTest
 class ScoringServiceTest {
 
     // Общий стаж менее 12 месяцев → отказ
+    @Value("${app-params.scoring.minTotalExperience}")
+    Integer MIN_TOTAL_EXPERIENCE;
+
     // Текущий стаж менее 3 месяцев → отказ
-    private static final Integer MIN_TOTAL_EXPERIENCE = 12;
-    private static final Integer MIN_CURRENT_EXPERIENCE = 3;
+    @Value("${app-params.scoring.minCurrentExperience}")
+    Integer MIN_CURRENT_EXPERIENCE;
 
     // Возраст менее 20 или более 60 лет → отказ
-    private static final Integer MIN_LOAN_AGE = 20;
-    private static final Integer MAX_LOAN_AGE = 60;
+    @Value("${app-params.scoring.minLoanAge}")
+    Integer MIN_LOAN_AGE;
+    @Value("${app-params.scoring.maxLoanAge}")
+    Integer MAX_LOAN_AGE;
 
     // Мужчина, возраст от 30 до 55 лет → ставка уменьшается на 3
-    private static final Integer MALE_PREFERRED_AGE_MIN = 30;
-    private static final Integer MALE_PREFERRED_AGE_MAX = 55;
-    private static final double MALE_PREFERRED_AGE_CORRECTION = -3;
+    @Value("${app-params.scoring.malePreferredAgeMin}")
+    Integer MALE_PREFERRED_AGE_MIN;
+    @Value("${app-params.scoring.malePreferredAgeMax}")
+    Integer MALE_PREFERRED_AGE_MAX;
+    @Value("${app-params.scoring.malePreferredAgeCorrection}")
+    double MALE_PREFERRED_AGE_CORRECTION;
 
     // Женщина, возраст от 35 до 60 лет → ставка уменьшается на 3
-    private static final Integer FEMALE_PREFERRED_AGE_MIN = 35;
-    private static final Integer FEMALE_PREFERRED_AGE_MAX = 60;
-    private static final double FEMALE_PREFERRED_AGE_CORRECTION = -3;
+    @Value("${app-params.scoring.femalePreferredAgeMin}")
+    Integer FEMALE_PREFERRED_AGE_MIN;
+    @Value("${app-params.scoring.femalePreferredAgeMax}")
+    Integer FEMALE_PREFERRED_AGE_MAX;
+    @Value("${app-params.scoring.femalePreferredAgeCorrection}")
+    double FEMALE_PREFERRED_AGE_CORRECTION;
 
     //Количество иждивенцев больше 1 → ставка увеличивается на 1
-    private static final Integer PREFERRED_DEPENDENT_AMOUNT_MAX = 1;
-    private static final Integer DEPENDENT_AMOUNT_CORRECTION = 1;
+    @Value("${app-params.scoring.preferredDependentAmountMax}")
+    Integer PREFERRED_DEPENDENT_AMOUNT_MAX;
+    @Value("${app-params.scoring.dependentAmountCorrection}")
+    Integer DEPENDENT_AMOUNT_CORRECTION;
 
     //Сумма займа больше, чем 20 зарплат → отказ
-    private static final BigDecimal SALARY_TO_LOAN_RATE_LIMIT = BigDecimal.valueOf(20);
+    @Value("${app-params.scoring.salaryToLoanRateLimit}")
+    double SALARY_TO_LOAN_RATE_LIMIT;
 
     // Самозанятый → ставка увеличивается на 1
-    private static final double SELF_EMPLOYED_CORRECTION = 1;
+    @Value("${app-params.scoring.selfEmployedCorrection}")
+    double SELF_EMPLOYED_CORRECTION;
 
     // Владелец бизнеса → ставка увеличивается на 3
-    private static final double BUSINESS_OWNER_CORRECTION = 3;
+    @Value("${app-params.scoring.businessOwnerCorrection}")
+    double BUSINESS_OWNER_CORRECTION;
 
     // Менеджер среднего звена → ставка уменьшается на 2
-    private static final double MID_MANAGER_CORRECTION = -2;
+    @Value("${app-params.scoring.midManagerCorrection}")
+    double MID_MANAGER_CORRECTION;
 
     // Топ-менеджер → ставка уменьшается на 4
-    private static final double TOP_MANAGER_CORRECTION = -4;
+    @Value("${app-params.scoring.topManagerCorrection}")
+    double TOP_MANAGER_CORRECTION;
 
     // Замужем/женат → ставка уменьшается на 3
-    private static final double MARRIED_CORRECTION = -3;
+    @Value("${app-params.scoring.marriedCorrection}")
+    double MARRIED_CORRECTION;
 
     // Разведен → ставка увеличивается на 1
-    private static final double DIVORCED_CORRECTION = 1;
+    @Value("${app-params.scoring.divorcedCorrection}")
+    double DIVORCED_CORRECTION;
 
     // Небинарный → ставка увеличивается на 3
-    private static final double NON_BINARY_CORRECTION = 3;
+    @Value("${app-params.scoring.nonBinaryCorrection}")
+    double NON_BINARY_CORRECTION;
 
-    // Сумма займа больше, чем 20 зарплат → отказ
-    private static final BigDecimal SALARY_TO_LOAN_RATE_MAX = BigDecimal.valueOf(20);
+    @Value("${app-params.baseRate}")
+    double BASE_RATE;
 
-
-    private static final double BASE_RATE = 15;
+    @Autowired
     private ScoringService scoringService;
     private ScoringDataDTO baseRateScoringRequest = new ScoringDataDTO();
 
     @BeforeEach
     void SetUp() {
-        scoringService = new ScoringService(BASE_RATE);
 
         baseRateScoringRequest = LoanCalculationTestData.getFineLoanCalculationRequestObject();
 
@@ -86,7 +106,9 @@ class ScoringServiceTest {
 
         EmploymentDTO employmentDTO = baseRateScoringRequest.getEmployment();
         employmentDTO.setEmploymentStatus(EmploymentDTO.EmploymentStatusEnum.EMPLOYED);
-        employmentDTO.setSalary(baseRateScoringRequest.getAmount().multiply(SALARY_TO_LOAN_RATE_LIMIT.subtract(BigDecimal.ONE)));
+        employmentDTO.setSalary(baseRateScoringRequest.getAmount()
+                .multiply(BigDecimal.valueOf(SALARY_TO_LOAN_RATE_LIMIT)
+                        .subtract(BigDecimal.ONE)));
         employmentDTO.setPosition(EmploymentDTO.PositionEnum.WORKER);
         employmentDTO.setWorkExperienceCurrent(MIN_CURRENT_EXPERIENCE);
         employmentDTO.setWorkExperienceTotal(MIN_TOTAL_EXPERIENCE);
@@ -104,6 +126,7 @@ class ScoringServiceTest {
         try {
             calculatedRate = scoringService.calculateRate(baseRateScoringRequest);
         } catch (ScoringException e) {
+            e.printStackTrace();
             throw new IllegalArgumentException("Got unexpected scoring exception!");
         }
 
@@ -457,7 +480,8 @@ class ScoringServiceTest {
 
         String expectedExceptionMessage = ScoringException.ExceptionCause.INSUFFICIENT_SALARY.getUserFriendlyMessage();
 
-        BigDecimal fineSalary = baseRateScoringRequest.getAmount().divide(SALARY_TO_LOAN_RATE_MAX, MathContext.DECIMAL64);
+        BigDecimal fineSalary = baseRateScoringRequest.getAmount()
+                .divide(BigDecimal.valueOf(SALARY_TO_LOAN_RATE_LIMIT), MathContext.DECIMAL64);
         BigDecimal fewSalary = fineSalary.subtract(BigDecimal.ONE);
 
         EmploymentDTO employmentDTO = baseRateScoringRequest.getEmployment();
