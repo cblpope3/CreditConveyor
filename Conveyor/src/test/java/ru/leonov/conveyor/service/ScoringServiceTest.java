@@ -15,6 +15,7 @@ import java.math.MathContext;
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 class ScoringServiceTest {
@@ -327,29 +328,23 @@ class ScoringServiceTest {
     @Test
     void calculateCreditRateFewTotalExperience() {
 
-        int numberOfHappenedExceptions = 0;
-
         String expectedExceptionMessage = ScoringException.ExceptionCause.INSUFFICIENT_EXPERIENCE.getUserFriendlyMessage();
 
         EmploymentDTO employmentDTO = baseRateScoringRequest.getEmployment();
         employmentDTO.setWorkExperienceTotal(MIN_TOTAL_EXPERIENCE - 1);
         baseRateScoringRequest.setEmployment(employmentDTO);
 
-        try {
-            scoringService.calculateRate(baseRateScoringRequest);
-        } catch (ScoringException e) {
-            assertEquals(expectedExceptionMessage, e.getMessage());
-            ++numberOfHappenedExceptions;
-        }
 
-        assertEquals(1, numberOfHappenedExceptions);
+        ScoringException receivedException = assertThrows(ScoringException.class,
+                () -> scoringService.calculateRate(baseRateScoringRequest));
+
+        assertEquals(expectedExceptionMessage, receivedException.getMessage());
+
     }
 
     // Текущий стаж менее 3 месяцев → отказ
     @Test
     void calculateCreditRateFewCurrentExperience() {
-
-        int numberOfHappenedExceptions = 0;
 
         String expectedExceptionMessage = ScoringException.ExceptionCause.INSUFFICIENT_EXPERIENCE.getUserFriendlyMessage();
 
@@ -357,66 +352,54 @@ class ScoringServiceTest {
         employmentDTO.setWorkExperienceTotal(MIN_CURRENT_EXPERIENCE - 1);
         baseRateScoringRequest.setEmployment(employmentDTO);
 
-        try {
-            scoringService.calculateRate(baseRateScoringRequest);
-        } catch (ScoringException e) {
-            assertEquals(expectedExceptionMessage, e.getMessage());
-            ++numberOfHappenedExceptions;
-        }
+        ScoringException receivedException = assertThrows(ScoringException.class,
+                () -> scoringService.calculateRate(baseRateScoringRequest));
 
-        assertEquals(1, numberOfHappenedExceptions);
+        assertEquals(expectedExceptionMessage, receivedException.getMessage());
+
     }
 
     // Возраст менее 20 или более 60 лет → отказ
     @Test
-    void calculateCreditRateAgeRefuse() {
-
-        int numberOfHappenedExceptions = 0;
+    void calculateCreditRateAgeRefuse() throws ScoringException {
 
         String expectedExceptionMessage = ScoringException.ExceptionCause.UNACCEPTABLE_AGE.getUserFriendlyMessage();
 
         //checking that person with minimum possible age will pass credit scoring
         baseRateScoringRequest.setBirthdate(LocalDate.now().minusYears(MIN_LOAN_AGE));
-        try {
-            scoringService.calculateRate(baseRateScoringRequest);
-        } catch (ScoringException e) {
-            throw new IllegalArgumentException("Minimum possible age should pass scoring.");
-        }
+        BigDecimal calculatedRate = scoringService.calculateRate(baseRateScoringRequest);
+        BigDecimal expectedRate = BigDecimal.valueOf(BASE_RATE);
+
+        assertEquals(0, expectedRate.compareTo(calculatedRate));
+
 
         //checking that person with less than minimum possible age will not pass credit scoring
         baseRateScoringRequest.setBirthdate(LocalDate.now().minusYears(MIN_LOAN_AGE - 1));
-        try {
-            scoringService.calculateRate(baseRateScoringRequest);
-        } catch (ScoringException e) {
-            assertEquals(expectedExceptionMessage, e.getMessage());
-            ++numberOfHappenedExceptions;
-        }
+        ScoringException receivedException = assertThrows(ScoringException.class,
+                () -> scoringService.calculateRate(baseRateScoringRequest));
+
+        assertEquals(expectedExceptionMessage, receivedException.getMessage());
+
 
         //checking that person with maximum possible age will pass credit scoring
         baseRateScoringRequest.setBirthdate(LocalDate.now().minusYears(MAX_LOAN_AGE));
-        try {
-            scoringService.calculateRate(baseRateScoringRequest);
-        } catch (ScoringException e) {
-            throw new IllegalArgumentException("Maximum possible age should pass scoring.");
-        }
+        calculatedRate = scoringService.calculateRate(baseRateScoringRequest);
+
+        assertEquals(0, expectedRate.compareTo(calculatedRate));
+
 
         //checking that person with more than maximum possible age will not pass credit scoring
         baseRateScoringRequest.setBirthdate(LocalDate.now().minusYears(MAX_LOAN_AGE + 1));
-        try {
-            scoringService.calculateRate(baseRateScoringRequest);
-        } catch (ScoringException e) {
-            assertEquals(expectedExceptionMessage, e.getMessage());
-            ++numberOfHappenedExceptions;
-        }
+        receivedException = assertThrows(ScoringException.class,
+                () -> scoringService.calculateRate(baseRateScoringRequest));
 
-        assertEquals(2, numberOfHappenedExceptions);
+        assertEquals(expectedExceptionMessage, receivedException.getMessage());
+
     }
 
     // Сумма займа больше, чем 20 зарплат → отказ
     @Test
-    void calculateCreditRateTooMuchAmountForSalary() {
-
-        int numberOfHappenedExceptions = 0;
+    void calculateCreditRateTooMuchAmountForSalary() throws ScoringException {
 
         String expectedExceptionMessage = ScoringException.ExceptionCause.INSUFFICIENT_SALARY.getUserFriendlyMessage();
 
@@ -429,30 +412,24 @@ class ScoringServiceTest {
         //customer with fine salary should pass scoring
         employmentDTO.setSalary(fineSalary);
         baseRateScoringRequest.setEmployment(employmentDTO);
-        try {
-            scoringService.calculateRate(baseRateScoringRequest);
-        } catch (ScoringException e) {
-            throw new IllegalArgumentException("Customer with fine salary should pass scoring.");
-        }
+        BigDecimal calculatedRate = scoringService.calculateRate(baseRateScoringRequest);
+        BigDecimal expectedRate = BigDecimal.valueOf(BASE_RATE);
+
+        assertEquals(0, expectedRate.compareTo(calculatedRate));
+
 
         //customer with too few salary shouldn't pass scoring
         employmentDTO.setSalary(fewSalary);
         baseRateScoringRequest.setEmployment(employmentDTO);
-        try {
-            scoringService.calculateRate(baseRateScoringRequest);
-        } catch (ScoringException e) {
-            assertEquals(expectedExceptionMessage, e.getMessage());
-            ++numberOfHappenedExceptions;
-        }
+        ScoringException receivedException = assertThrows(ScoringException.class,
+                () -> scoringService.calculateRate(baseRateScoringRequest));
 
-        assertEquals(1, numberOfHappenedExceptions);
+        assertEquals(expectedExceptionMessage, receivedException.getMessage());
     }
 
     // Безработный → отказ
     @Test
     void calculateCreditRateUnemployed() {
-
-        int numberOfHappenedExceptions = 0;
 
         String expectedExceptionMessage = ScoringException.ExceptionCause.UNACCEPTABLE_EMPLOYER_STATUS.getUserFriendlyMessage();
 
@@ -460,14 +437,10 @@ class ScoringServiceTest {
         employmentDTO.setEmploymentStatus(EmploymentDTO.EmploymentStatusEnum.UNEMPLOYED);
         baseRateScoringRequest.setEmployment(employmentDTO);
 
-        try {
-            scoringService.calculateRate(baseRateScoringRequest);
-        } catch (ScoringException e) {
-            assertEquals(expectedExceptionMessage, e.getMessage());
-            ++numberOfHappenedExceptions;
-        }
+        ScoringException receivedException = assertThrows(ScoringException.class,
+                () -> scoringService.calculateRate(baseRateScoringRequest));
 
-        assertEquals(1, numberOfHappenedExceptions);
+        assertEquals(expectedExceptionMessage, receivedException.getMessage());
     }
 
 }
