@@ -57,8 +57,8 @@
 		</dependency>
 		<dependency>
 			<groupId>com.vladmihalcea</groupId>
-			<artifactId>hibernate-types-52</artifactId>
-			<version>2.9.11</version>
+			<artifactId>hibernate-types-55</artifactId>
+			<version>2.16.2</version>
 		</dependency>
 
 <!--		JSON-->
