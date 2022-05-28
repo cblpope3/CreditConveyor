@@ -167,9 +167,8 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
-                  #todo was ist das?
                   name: applied_offer
-                  type: BIGINT
+                  type: JSONB
               - column:
                   name: sign_date
                   type: DATE
