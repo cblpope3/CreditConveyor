@@ -14,9 +14,14 @@ info:
   description: Api of neoflex training project.
 servers:
   - url: 'http://localhost:8080'
+    description: Conveyor
+  - url: 'http://localhost:8081'
+    description: Deal
 tags:
   - name: Conveyor
     description: Запросы к кредитному конвейеру
+  - name: Deal
+    description: Запросы к сервису Deal
 paths:
   /conveyor/offers:
     post:
@@ -186,6 +191,163 @@ paths:
                   isInsuranceEnabled: true
                   isSalaryClient: true
         description: Данные для расчёта кредита.
+  /deal/application:
+    summary: Расчёт возможных условий кредита.
+    description: Предварительный запрос на получение возможных вариантов кредитования.
+    post:
+      summary: Расчёт возможных условий кредита.
+      description: Предварительный расчёт возможных условий кредита
+      operationId: post-deal-application
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LoanOffer'
+              examples:
+                Пример возможных данных о кредите.:
+                  value:
+                    - applicationId: 590311
+                      requestedAmount: 30000
+                      totalAmount: 31326.06
+                      term: 6
+                      monthlyPayment: 5221.01
+                      rate: 15
+                      isInsuranceEnabled: false
+                      isSalaryClient: false
+                    - applicationId: 573802
+                      requestedAmount: 30000
+                      totalAmount: 131236.84
+                      term: 6
+                      monthlyPayment: 5206.14
+                      rate: 14
+                      isInsuranceEnabled: true
+                      isSalaryClient: false
+                    - applicationId: 921379
+                      requestedAmount: 30000
+                      totalAmount: 31058.7
+                      term: 6
+                      monthlyPayment: 5176.45
+                      rate: 12
+                      isInsuranceEnabled: false
+                      isSalaryClient: true
+                    - applicationId: 12600
+                      requestedAmount: 30000
+                      totalAmount: 130969.84
+                      term: 6
+                      monthlyPayment: 5161.64
+                      rate: 11
+                      isInsuranceEnabled: true
+                      isSalaryClient: true
+        '400':
+          $ref: '#/components/responses/LoanErrorResponse'
+      tags:
+        - Deal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoanApplicationRequest'
+            examples:
+              Пример данных для предварительного расчёта условий кредита.:
+                value:
+                  amount: 643445.43
+                  term: 42
+                  firstName: Vasiliy
+                  lastName: Pupkin
+                  middleName: Ulukbekovich
+                  email: vasyapoop@ulukbek.ru
+                  birthdate: '1998-04-28'
+                  passportSeries: '2467'
+                  passportNumber: '567321'
+        description: Данные для предварительного расчёта.
+    parameters: []
+  /deal/offer:
+    put:
+      summary: Выбор предложения по кредиту.
+      operationId: put-deal-offer
+      tags:
+        - Deal
+      responses:
+        '200':
+          description: OK
+        '404':
+          description: Application id not Found
+      description: 'Клиент производит выбор одного из предложений по кредиту, ранее высланных ему.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoanOffer'
+            examples:
+              example-1:
+                value:
+                  applicationId: 573802
+                  requestedAmount: 30000
+                  totalAmount: 131236.84
+                  term: 6
+                  monthlyPayment: 5206.14
+                  rate: 14
+                  isInsuranceEnabled: true
+                  isSalaryClient: false
+        description: 'Предложение, ранее высланное клиенту.'
+  '/deal/calculate/{applicationId}':
+    put:
+      summary: Детальный расчёт кредита.
+      operationId: put-deal-calculate
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '#/components/responses/LoanErrorResponse'
+        '404':
+          description: Application id not found
+      description: Запрос на завершение регистрации и получение деталей кредита.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScoringData'
+            examples:
+              Пример данных для скоринга:
+                value:
+                  amount: 235345.76
+                  term: 54
+                  firstName: Vasiliy
+                  lastName: Pupkin
+                  middleName: Ulukbekovich
+                  gender: MALE
+                  birthdate: '1990-04-23'
+                  passportSeries: '4523'
+                  passportNumber: '234222'
+                  passportIssueDate: '2008-12-30'
+                  passportIssueBranch: Отдел УВД Бобруйска №66
+                  maritalStatus: MARRIED
+                  dependentAmount: 0
+                  employment:
+                    employmentStatus: SELF_EMPLOYED
+                    employerINN: '123456789012'
+                    salary: 45000.34
+                    position: OWNER
+                    workExperienceTotal: 34
+                    workExperienceCurrent: 10
+                  account: '23424275349538'
+                  isInsuranceEnabled: true
+                  isSalaryClient: true
+        description: Данные для скоринга.
+    parameters:
+      - schema:
+          type: integer
+        name: applicationId
+        in: path
+        required: true
+        description: Id заявки на кредит
 components:
   schemas:
     LoanApplicationRequest:
@@ -247,8 +409,8 @@ components:
           format: email
           example: vasyapoop@ulukbek.ru
         birthdate:
-          type: date
-          format: YYYY-MM-DD
+          type: string
+          format: date
           description: Дата рождения.
           example: '1998-04-28'
         passportSeries:
@@ -342,8 +504,8 @@ components:
           format: int32
           description: Номер платежа.
         date:
-          type: date
-          format: YYYY-MM-DD
+          type: string
+          format: date
           description: Дата платежа.
         totalPayment:
           type: number
@@ -493,8 +655,8 @@ components:
             - NON_BINARY
           description: Пол.
         birthdate:
-          type: date
-          format: YYYY-MM-DD
+          type: string
+          format: date
           description: Дата рождения.
           example: '1990-04-23'
         passportSeries:
@@ -512,8 +674,8 @@ components:
           maxLength: 6
           example: '234222'
         passportIssueDate:
-          type: date
-          format: YYYY-MM-DD
+          type: string
+          format: date
           description: Дата выдачи паспорта.
           example: '2008-12-30'
         passportIssueBranch:
