@@ -46,6 +46,7 @@ public class ApplicationEntity {
      * @see Status
      */
     @Column(name = "status", nullable = false)
+    @Enumerated(EnumType.STRING)
     private Status status;
 
     /**
@@ -117,7 +118,7 @@ public class ApplicationEntity {
          */
         DOCUMENT_CREATED,
         /**
-         * Application is deined by client.
+         * Application is denied by client.
          */
         CLIENT_DENIED,
         /**
