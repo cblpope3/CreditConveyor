@@ -5,12 +5,12 @@ import lombok.Getter;
 /**
  * Exception that is thrown during loan offer application process.
  */
-public class ApplyOfferException extends RuntimeException {
+public class ApplicationException extends RuntimeException {
 
     @Getter
     private final ExceptionCause exceptionCause;
 
-    public ApplyOfferException(ExceptionCause exceptionCause) {
+    public ApplicationException(ExceptionCause exceptionCause) {
         super(exceptionCause.getUserFriendlyMessage());
         this.exceptionCause = exceptionCause;
     }

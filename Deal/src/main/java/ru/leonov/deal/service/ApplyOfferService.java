@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.leonov.deal.dto.LoanOfferDTO;
-import ru.leonov.deal.exceptions.ApplyOfferException;
+import ru.leonov.deal.exceptions.ApplicationException;
 import ru.leonov.deal.model.entity.ApplicationEntity;
 import ru.leonov.deal.repository.ApplicationRepository;
 
@@ -33,7 +33,7 @@ public class ApplyOfferService {
 
         if (appliedApplication == null) {
             log.warn("Can't find application with given id: {}.", appliedOffer.getApplicationId());
-            throw new ApplyOfferException(ApplyOfferException.ExceptionCause.APPLICATION_NOT_FOUND);
+            throw new ApplicationException(ApplicationException.ExceptionCause.APPLICATION_NOT_FOUND);
         }
 
         //adding new status to status history
