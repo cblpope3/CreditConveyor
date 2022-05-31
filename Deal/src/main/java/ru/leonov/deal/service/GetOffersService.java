@@ -3,7 +3,7 @@ package ru.leonov.deal.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.leonov.deal.client.PreScoringClient;
+import ru.leonov.deal.client.ConveyorAppClient;
 import ru.leonov.deal.dto.LoanApplicationRequestDTO;
 import ru.leonov.deal.dto.LoanOfferDTO;
 import ru.leonov.deal.mappers.LoanRequestMapper;
@@ -26,7 +26,7 @@ import static ru.leonov.deal.utility.ApplicationUtility.createNewApplication;
 @Service
 public class GetOffersService {
 
-    private final PreScoringClient preScoringClient;
+    private final ConveyorAppClient conveyorAppClient;
     private final ClientRepository clientRepository;
     private final ApplicationRepository applicationRepository;
 
@@ -50,7 +50,7 @@ public class GetOffersService {
         // 4.	Отправляется POST запрос на /conveyor/offers МС conveyor через FeignClient
         // (здесь и далее вместо FeignClient можно использовать RestTemplate).
         // Каждому элементу из списка List<LoanOfferDTO> присваивается id созданной заявки (Application)
-        List<LoanOfferDTO> responseList = preScoringClient.requestLoanOffer(loanApplicationRequestDTO);
+        List<LoanOfferDTO> responseList = conveyorAppClient.requestLoanOffer(loanApplicationRequestDTO);
         log.trace("Got loan offer list from Conveyor app: {}", responseList);
 
         responseList.forEach(a -> a.setApplicationId(newApplicationId));
