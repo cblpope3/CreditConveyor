@@ -9,16 +9,14 @@ import ru.leonov.deal.dto.LoanOfferDTO;
 import ru.leonov.deal.mappers.LoanRequestMapper;
 import ru.leonov.deal.model.entity.ApplicationEntity;
 import ru.leonov.deal.model.entity.ClientEntity;
-import ru.leonov.deal.model.record.ApplicationHistoryElementRecord;
 import ru.leonov.deal.repository.ApplicationRepository;
 import ru.leonov.deal.repository.ClientRepository;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 
-import static ru.leonov.deal.model.entity.ApplicationEntity.Status.PREAPPROVAL;
+import static ru.leonov.deal.utility.ApplicationUtility.createNewApplication;
 
 /**
  * Service that handle loan application requests.
@@ -46,7 +44,7 @@ public class GetOffersService {
         log.trace("New client #{} saved to database.", newClient.getId());
 
         // 3.	Создаётся Application со связью на только что созданный Client и сохраняется в БД.
-        Long newApplicationId = saveNewApplication(newClient);
+        Long newApplicationId = saveNewApplicationToDatabase(newClient);
         log.trace("Application #{} saved.", newApplicationId);
 
         // 4.	Отправляется POST запрос на /conveyor/offers МС conveyor через FeignClient
@@ -73,17 +71,10 @@ public class GetOffersService {
      * @param newClient client that requested new application.
      * @return id of saved application.
      */
-    private Long saveNewApplication(ClientEntity newClient) {
+    private Long saveNewApplicationToDatabase(ClientEntity newClient) {
         log.trace("Generating new application of client #{} to database.", newClient.getId());
-        ApplicationEntity newApplication = new ApplicationEntity();
-        newApplication.setClient(newClient);
-        newApplication.setStatus(PREAPPROVAL);
-        newApplication.setCreationDate(LocalDate.now());
 
-        ApplicationHistoryElementRecord newApplicationHistory = new ApplicationHistoryElementRecord();
-        newApplicationHistory.setStatus(PREAPPROVAL);
-        newApplicationHistory.setDate(LocalDate.now());
-        newApplication.setStatusHistory(List.of(newApplicationHistory));
+        ApplicationEntity newApplication = createNewApplication(newClient);
 
         log.trace("Saving application '{}' to database.", newApplication);
         return applicationRepository.save(newApplication).getId();
