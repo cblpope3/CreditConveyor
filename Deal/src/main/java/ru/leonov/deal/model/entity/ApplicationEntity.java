@@ -27,7 +27,7 @@ public class ApplicationEntity {
      *
      * @see ClientEntity
      */
-    @ManyToOne(optional = false)
+    @OneToOne(optional = false)
     @JoinColumn(name = "client", nullable = false)
     private ClientEntity client;
 
@@ -36,7 +36,7 @@ public class ApplicationEntity {
      *
      * @see CreditEntity
      */
-    @ManyToOne(optional = false)
+    @OneToOne
     @JoinColumn(name = "credit")
     private CreditEntity credit;
 
