@@ -213,6 +213,7 @@
 								<sourceFolder>src/main/java</sourceFolder>
 								<openApiNullable>false</openApiNullable>
 								<modelMutable>true</modelMutable>
+								<enumPropertyNaming>UPPERCASE</enumPropertyNaming>
 								<typeMappings>
 									<typeMapping>date=java.time.LocalDate</typeMapping>
 								</typeMappings>
