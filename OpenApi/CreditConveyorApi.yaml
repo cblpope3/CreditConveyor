@@ -313,23 +313,15 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ScoringData'
+              $ref: '#/components/schemas/FinishRegistrationRequest'
             examples:
-              Пример данных для скоринга:
+              Пример запроса для завершения регистрации.:
                 value:
-                  amount: 235345.76
-                  term: 54
-                  firstName: Vasiliy
-                  lastName: Pupkin
-                  middleName: Ulukbekovich
-                  gender: MALE
-                  birthdate: '1990-04-23'
-                  passportSeries: '4523'
-                  passportNumber: '234222'
-                  passportIssueDate: '2008-12-30'
-                  passportIssueBranch: Отдел УВД Бобруйска №66
-                  maritalStatus: MARRIED
-                  dependentAmount: 0
+                  gender: FEMALE
+                  maritalStatus: SINGLE
+                  dependentAmount: 4
+                  passportIssueDate: '2013-05-22'
+                  passportIssueBranch: УВД №66 г. Бобруйска.
                   employment:
                     employmentStatus: SELF_EMPLOYED
                     employerINN: '123456789012'
@@ -337,13 +329,12 @@ paths:
                     position: OWNER
                     workExperienceTotal: 34
                     workExperienceCurrent: 10
-                  account: '23424275349538'
-                  isInsuranceEnabled: true
-                  isSalaryClient: true
+                  account: '234234264363'
         description: Данные для скоринга.
     parameters:
       - schema:
           type: integer
+          format: int64
         name: applicationId
         in: path
         required: true
@@ -876,6 +867,72 @@ components:
         applicationId:
           type: integer
           format: int64
+    FinishRegistrationRequest:
+      type: object
+      x-examples:
+        Пример данных для завершения регистрации.:
+          gender: MALE
+          maritalStatus: MARRIED
+          dependentAmount: 4
+          passportIssueDate: '2013-05-22'
+          passportIssueBranch: УВД №66 г. Бобруйска.
+          employment:
+            employmentStatus: SELF_EMPLOYED
+            employerINN: '123456789012'
+            salary: 45000.34
+            position: OWNER
+            workExperienceTotal: 34
+            workExperienceCurrent: 10
+          account: '234234264363'
+      properties:
+        gender:
+          type: string
+          enum:
+            - MALE
+            - FEMALE
+            - NON_BINARY
+          example: FEMALE
+          description: Пол.
+        maritalStatus:
+          type: string
+          enum:
+            - MARRIED
+            - DIVORCED
+            - SINGLE
+            - WIDOW_WIDOWER
+          example: SINGLE
+          description: Семейное положение.
+        dependentAmount:
+          type: integer
+          format: int32
+          example: 4
+          description: Количество иждивенцев.
+        passportIssueDate:
+          type: string
+          format: date
+          example: '2013-05-22'
+          description: Дата выдачи паспорта.
+        passportIssueBranch:
+          type: string
+          example: УВД №66 г. Бобруйска.
+          description: Кем выдан паспорт.
+        employment:
+          $ref: '#/components/schemas/Employment'
+        account:
+          type: string
+          example: '234234264363'
+          pattern: '[0-9]+'
+          description: Номер счёта.
+      required:
+        - gender
+        - maritalStatus
+        - dependentAmount
+        - passportIssueDate
+        - passportIssueBranch
+        - employment
+        - account
+      description: Данные для завершения регистрации.
+      title: FinishRegistrationRequest
   securitySchemes: {}
   examples: {}
   parameters: {}
