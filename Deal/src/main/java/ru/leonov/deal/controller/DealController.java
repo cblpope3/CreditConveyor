@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -16,11 +15,12 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import ru.leonov.deal.dto.FinishRegistrationRequestDTO;
 import ru.leonov.deal.dto.LoanApplicationRequestDTO;
 import ru.leonov.deal.dto.LoanOfferDTO;
-import ru.leonov.deal.dto.ScoringDataDTO;
-import ru.leonov.deal.exceptions.ApplyOfferException;
+import ru.leonov.deal.exceptions.ApplicationException;
 import ru.leonov.deal.service.ApplyOfferService;
+import ru.leonov.deal.service.CreditCalculationService;
 import ru.leonov.deal.service.GetOffersService;
 
 import java.util.List;
@@ -38,6 +38,7 @@ public class DealController implements DealApi {
 
     private final GetOffersService getOffersService;
     private final ApplyOfferService applyOfferService;
+    private final CreditCalculationService creditCalculationService;
 
     /**
      * Request of loan offer list.
@@ -83,11 +84,11 @@ public class DealController implements DealApi {
      * @param e exception that happened during loan offer application process.
      * @return {@link String} with problem explanation.
      */
-    @ExceptionHandler(ApplyOfferException.class)
+    @ExceptionHandler(ApplicationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<String> putDealOfferBadRequest(ApplyOfferException e) {
+    public ResponseEntity<String> putDealOfferBadRequest(ApplicationException e) {
         String responseMessage = e.getMessage();
-        if (e.getExceptionCause() == ApplyOfferException.ExceptionCause.APPLICATION_NOT_FOUND) {
+        if (e.getExceptionCause() == ApplicationException.ExceptionCause.APPLICATION_NOT_FOUND) {
             log.debug("Not found application with requested id.");
             return new ResponseEntity<>(responseMessage, HttpStatus.NOT_FOUND);
         } else {
@@ -96,11 +97,20 @@ public class DealController implements DealApi {
         }
     }
 
+    /**
+     * Finish loan application process.
+     *
+     * @param applicationId                id of loan application.
+     * @param finishRegistrationRequestDTO data to finish registration.
+     * @return code 200 if registration is finished successfully.
+     */
     @NotNull
     @Override
-    public ResponseEntity<Unit> putDealCalculate(int applicationId, @Nullable ScoringDataDTO scoringDataDTO) {
-        //todo implement this
-        return null;
+    public ResponseEntity<Unit> putDealCalculate(long applicationId, @NotNull FinishRegistrationRequestDTO finishRegistrationRequestDTO) {
+
+        creditCalculationService.calculateCredit(finishRegistrationRequestDTO, applicationId);
+
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     /**
