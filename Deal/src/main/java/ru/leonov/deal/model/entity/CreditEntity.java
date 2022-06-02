@@ -11,6 +11,7 @@ import ru.leonov.deal.model.record.AdditionalServicesRecord;
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Entity that represents credit as object that stored in "credits" database table.
@@ -83,6 +84,19 @@ public class CreditEntity {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "credit_id_generator")
     @SequenceGenerator(name = "credit_id_generator", sequenceName = "credits_sequence", allocationSize = 1)
     private Long id;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CreditEntity that = (CreditEntity) o;
+        return amount.equals(that.amount) && term.equals(that.term) && Objects.equals(monthlyPayment, that.monthlyPayment) && Objects.equals(rate, that.rate) && Objects.equals(psk, that.psk) && Objects.equals(paymentSchedule, that.paymentSchedule) && additionalServices.equals(that.additionalServices) && creditStatus == that.creditStatus && Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(amount, term, monthlyPayment, rate, psk, paymentSchedule, additionalServices, creditStatus, id);
+    }
 
     /**
      * Credit status enum. Possible values are: 'CALCULATED', 'ISSUED'.

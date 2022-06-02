@@ -11,6 +11,7 @@ import ru.leonov.deal.model.record.ApplicationHistoryElementRecord;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Entity that represents credit application process as object that stored in table "applications" in database.
@@ -87,6 +88,19 @@ public class ApplicationEntity {
     @SequenceGenerator(name = "application_id_generator", sequenceName = "applications_sequence", allocationSize = 1)
     private Long id;
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ApplicationEntity that = (ApplicationEntity) o;
+        return client.equals(that.client) && Objects.equals(credit, that.credit) && status == that.status && creationDate.equals(that.creationDate) && Objects.equals(appliedOffer, that.appliedOffer) && Objects.equals(signDate, that.signDate) && Objects.equals(statusHistory, that.statusHistory) && Objects.equals(sesCode, that.sesCode) && Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(client, credit, status, creationDate, appliedOffer, signDate, statusHistory, sesCode, id);
+    }
+
     /**
      * Credit application status enum. Possible values are: 'PREAPPROVAL', 'APPROVED', 'CC_DENIED', 'CC_APPROVED',
      * 'PREPARE_DOCUMENTS', 'DOCUMENT_CREATED', 'CLIENT_DENIED', 'DOCUMENT_SIGNED', 'CREDIT_ISSUED',
@@ -130,5 +144,4 @@ public class ApplicationEntity {
          */
         CREDIT_ISSUED,
     }
-
 }

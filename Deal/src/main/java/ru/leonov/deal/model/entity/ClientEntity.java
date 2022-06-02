@@ -10,6 +10,7 @@ import ru.leonov.deal.model.record.PassportRecord;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.util.Objects;
 
 /**
  * Entity that represents client as object that stored in table "clients" in database.
@@ -106,6 +107,18 @@ public class ClientEntity {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "client_id_generator")
     @SequenceGenerator(name = "client_id_generator", sequenceName = "clients_sequence", allocationSize = 1)
     private Long id;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ClientEntity client)) return false;
+        return firstName.equals(client.firstName) && lastName.equals(client.lastName) && Objects.equals(middleName, client.middleName) && birthDate.equals(client.birthDate) && email.equals(client.email) && gender == client.gender && maritalStatus == client.maritalStatus && Objects.equals(dependentAmount, client.dependentAmount) && Objects.equals(passport, client.passport) && Objects.equals(employment, client.employment) && Objects.equals(account, client.account) && Objects.equals(id, client.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(firstName, lastName, middleName, birthDate, email, gender, maritalStatus, dependentAmount, passport, employment, account, id);
+    }
 
     /**
      * Client's gender enum. Possible values are: 'MALE', 'FEMALE' or 'NON_BINARY'.
