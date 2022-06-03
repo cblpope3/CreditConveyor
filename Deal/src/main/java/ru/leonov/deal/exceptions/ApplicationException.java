@@ -1,10 +1,12 @@
 package ru.leonov.deal.exceptions;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 /**
  * Exception that is thrown during loan offer application process.
  */
+@EqualsAndHashCode(callSuper = false)
 public class ApplicationException extends RuntimeException {
 
     @Getter
