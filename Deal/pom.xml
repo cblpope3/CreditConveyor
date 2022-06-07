@@ -136,13 +136,67 @@
 	</dependencies>
 
 	<build>
-		<sourceDirectory>${project.basedir}/src/main/kotlin</sourceDirectory>
+		<sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
 		<testSourceDirectory>${project.basedir}/src/test/kotlin</testSourceDirectory>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+
+			<plugin>
+				<groupId>org.jetbrains.kotlin</groupId>
+				<artifactId>kotlin-maven-plugin</artifactId>
+				<version>${kotlin.version}</version>
+				<executions>
+					<execution>
+						<id>compile</id>
+						<phase>process-sources</phase>
+						<goals>
+							<goal>compile</goal>
+						</goals>
+						<configuration>
+							<sourceDirs>
+								<sourceDir>${project.basedir}/src/main/java</sourceDir>
+								<sourceDir>${project.basedir}/src/main/kotlin</sourceDir>
+							</sourceDirs>
+							<jvmTarget>${java.version}</jvmTarget>
+							<args>
+								<arg>-Xjvm-default=enable</arg>
+							</args>
+						</configuration>
+					</execution>
+					<execution>
+						<id>test-compile</id>
+						<goals>
+							<goal>test-compile</goal>
+						</goals>
+						<configuration>
+							<sourceDirs>
+								<sourceDir>${project.basedir}/src/test/java</sourceDir>
+								<sourceDir>${project.basedir}/src/test/kotlin</sourceDir>
+							</sourceDirs>
+							<jvmTarget>${java.version}</jvmTarget>
+						</configuration>
+					</execution>
+				</executions>
+				<configuration>
+					<args>
+						<arg>-Xjsr305=strict</arg>
+					</args>
+					<compilerPlugins>
+						<plugin>spring</plugin>
+					</compilerPlugins>
+				</configuration>
+				<dependencies>
+					<dependency>
+						<groupId>org.jetbrains.kotlin</groupId>
+						<artifactId>kotlin-maven-allopen</artifactId>
+						<version>${kotlin.version}</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+
 
 			<!--		TODO remove this when project is rewritten in kotlin-->
 			<plugin>
@@ -177,25 +231,7 @@
 				</configuration>
 			</plugin>
 
-			<plugin>
-				<groupId>org.jetbrains.kotlin</groupId>
-				<artifactId>kotlin-maven-plugin</artifactId>
-				<configuration>
-					<args>
-						<arg>-Xjsr305=strict</arg>
-					</args>
-					<compilerPlugins>
-						<plugin>spring</plugin>
-					</compilerPlugins>
-				</configuration>
-				<dependencies>
-					<dependency>
-						<groupId>org.jetbrains.kotlin</groupId>
-						<artifactId>kotlin-maven-allopen</artifactId>
-						<version>${kotlin.version}</version>
-					</dependency>
-				</dependencies>
-			</plugin>
+
 			<plugin>
 				<groupId>org.openapitools</groupId>
 				<artifactId>openapi-generator-maven-plugin</artifactId>
@@ -210,7 +246,7 @@
 							<inputSpec>
 								../OpenApi/CreditConveyorApi.yaml
 							</inputSpec>
-							<generatorName>kotlin-spring</generatorName>
+							<generatorName>spring</generatorName>
 							<configOptions>
 								<dateLibrary>java8</dateLibrary>
 								<developerName>Leonov Nick</developerName>
@@ -221,8 +257,6 @@
 								<modelPackage>ru.leonov.deal.dto</modelPackage>
 								<sourceFolder>src/main/java</sourceFolder>
 								<openApiNullable>false</openApiNullable>
-								<modelMutable>true</modelMutable>
-								<enumPropertyNaming>UPPERCASE</enumPropertyNaming>
 								<typeMappings>
 									<typeMapping>date=java.time.LocalDate</typeMapping>
 								</typeMappings>

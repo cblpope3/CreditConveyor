@@ -1,6 +1,5 @@
 package ru.leonov.deal.controller;
 
-import kotlin.Unit;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -68,7 +67,7 @@ public class DealController implements DealApi {
      */
     @NotNull
     @Override
-    public ResponseEntity<Unit> putDealOffer(LoanOfferDTO loanOfferDTO) {
+    public ResponseEntity<Void> putDealOffer(LoanOfferDTO loanOfferDTO) {
 
         log.debug("Got apply offer request: {}", loanOfferDTO.toString());
 
@@ -106,7 +105,7 @@ public class DealController implements DealApi {
      */
     @NotNull
     @Override
-    public ResponseEntity<Unit> putDealCalculate(long applicationId, @NotNull FinishRegistrationRequestDTO finishRegistrationRequestDTO) {
+    public ResponseEntity<Void> putDealCalculate(Long applicationId, FinishRegistrationRequestDTO finishRegistrationRequestDTO) {
 
         creditCalculationService.calculateCredit(finishRegistrationRequestDTO, applicationId);
 
