@@ -139,12 +139,40 @@ class CreditCalculationTestData {
             return Optional.of(applicationEntityStoredInDBBefore())
         }
 
+        fun applicationOptionalStoredInDBBeforeWithCCDeniedStatus(): Optional<ApplicationEntity> {
+            val application = applicationEntityStoredInDBBefore()
+            application.status = ApplicationEntity.Status.CC_DENIED
+            return Optional.of(application)
+        }
+
+        fun applicationOptionalStoredInDBBeforeWithClientDeniedStatus(): Optional<ApplicationEntity> {
+            val application = applicationEntityStoredInDBBefore()
+            application.status = ApplicationEntity.Status.CLIENT_DENIED
+            return Optional.of(application)
+        }
+
         fun applicationEntityUpdatedAfterCreditCalculation(): ApplicationEntity {
             val application = applicationEntityStoredInDBBefore()
             application.client = completedClientEntity()
             application.credit = creditEntityExpectedToSaveInDBWithIdObject()
 
             val newApplicationStatus = ApplicationEntity.Status.CC_APPROVED
+
+            val applicationStatusHistoryElement = ApplicationHistoryElementRecord()
+            applicationStatusHistoryElement.date = LocalDate.now()
+            applicationStatusHistoryElement.status = newApplicationStatus
+
+            application.status = newApplicationStatus
+            application.statusHistory.add(applicationStatusHistoryElement)
+
+            return application
+        }
+
+        fun applicationEntityUpdatedAfterCreditRejected(): ApplicationEntity {
+            val application = applicationEntityStoredInDBBefore()
+            application.client = completedClientEntity()
+
+            val newApplicationStatus = ApplicationEntity.Status.CC_DENIED
 
             val applicationStatusHistoryElement = ApplicationHistoryElementRecord()
             applicationStatusHistoryElement.date = LocalDate.now()
