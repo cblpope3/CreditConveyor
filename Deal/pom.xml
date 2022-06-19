@@ -132,6 +132,16 @@
 			<version>${mapstruct.version}</version>
 		</dependency>
 
+<!--		Logger-->
+		<dependency>
+			<groupId>io.github.microutils</groupId>
+			<artifactId>kotlin-logging-jvm</artifactId>
+			<version>2.1.23</version>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+		</dependency>
 
 	</dependencies>
 
@@ -230,8 +240,6 @@
 					</compilerArgs>
 				</configuration>
 			</plugin>
-
-
 			<plugin>
 				<groupId>org.openapitools</groupId>
 				<artifactId>openapi-generator-maven-plugin</artifactId>
@@ -246,7 +254,7 @@
 							<inputSpec>
 								../OpenApi/CreditConveyorApi.yaml
 							</inputSpec>
-							<generatorName>spring</generatorName>
+							<generatorName>kotlin-spring</generatorName>
 							<configOptions>
 								<dateLibrary>java8</dateLibrary>
 								<developerName>Leonov Nick</developerName>
@@ -255,8 +263,10 @@
 								<interfaceOnly>true</interfaceOnly>
 								<apiPackage>ru.leonov.deal.controller</apiPackage>
 								<modelPackage>ru.leonov.deal.dto</modelPackage>
-								<sourceFolder>src/main/java</sourceFolder>
+								<sourceFolder>src/main/kotlin</sourceFolder>
 								<openApiNullable>false</openApiNullable>
+								<modelMutable>true</modelMutable>
+								<enumPropertyNaming>UPPERCASE</enumPropertyNaming>
 								<typeMappings>
 									<typeMapping>date=java.time.LocalDate</typeMapping>
 								</typeMappings>

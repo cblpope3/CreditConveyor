@@ -17,8 +17,8 @@ public interface FinishRegistrationMapper {
 
     @Mapping(target = "amount", source = "application.appliedOffer.requestedAmount")
     @Mapping(target = "term", source = "application.appliedOffer.term")
-    @Mapping(target = "isInsuranceEnabled", source = "application.appliedOffer.isInsuranceEnabled")
-    @Mapping(target = "isSalaryClient", source = "application.appliedOffer.isSalaryClient")
+    @Mapping(target = "isInsuranceEnabled", source = "application.appliedOffer.insuranceEnabled")
+    @Mapping(target = "isSalaryClient", source = "application.appliedOffer.salaryClient")
 
     @Mapping(target = "firstName", source = "application.client.firstName")
     @Mapping(target = "lastName", source = "application.client.lastName")
@@ -43,8 +43,8 @@ public interface FinishRegistrationMapper {
     ScoringDataDTO mapApplicationEntityToScoringData(ApplicationEntity application);
 
 
-    @Mapping(target = "additionalServices.isInsuranceEnabled", source = "creditDTO.isInsuranceEnabled")
-    @Mapping(target = "additionalServices.isSalaryClient", source = "creditDTO.isSalaryClient")
+    @Mapping(target = "additionalServices.isInsuranceEnabled", source = "creditDTO.insuranceEnabled")
+    @Mapping(target = "additionalServices.isSalaryClient", source = "creditDTO.salaryClient")
     CreditEntity mapCreditDTOtoCreditEntity(CreditDTO creditDTO);
 
 

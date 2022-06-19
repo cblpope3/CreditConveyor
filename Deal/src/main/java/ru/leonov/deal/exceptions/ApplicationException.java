@@ -9,12 +9,15 @@ import lombok.Getter;
 @EqualsAndHashCode(callSuper = false)
 public class ApplicationException extends RuntimeException {
 
-    @Getter
     private final ExceptionCause exceptionCause;
 
     public ApplicationException(ExceptionCause exceptionCause) {
         super(exceptionCause.getUserFriendlyMessage());
         this.exceptionCause = exceptionCause;
+    }
+
+    public ExceptionCause getExceptionCause() {
+        return exceptionCause;
     }
 
     /**
