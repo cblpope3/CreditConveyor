@@ -5,6 +5,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import ru.leonov.deal.dto.LoanOfferDTO
 import ru.leonov.deal.model.entity.ApplicationEntity
 import ru.leonov.deal.model.entity.ClientEntity
+import ru.leonov.deal.model.enums.ApplicationStatusEnum
 import ru.leonov.deal.model.record.ApplicationHistoryElementRecord
 import java.time.LocalDate
 import java.util.*
@@ -42,23 +43,23 @@ class ApplyOfferServiceTestData {
         }
 
         private fun unfilledApplicationEntity(): ApplicationEntity {
-            val applicationStatus = ApplicationEntity.Status.PREAPPROVAL
+            val applicationStatus = ApplicationStatusEnum.PREAPPROVAL
             val resultClient = fineClientEntity()
 
-            val applicationStatusHistoryElement = ApplicationHistoryElementRecord()
-            applicationStatusHistoryElement.date = LocalDate.now().minusDays(2)
-            applicationStatusHistoryElement.status = applicationStatus
+            val applicationStatusHistoryElement = ApplicationHistoryElementRecord(
+                date = LocalDate.now().minusDays(2),
+                status = applicationStatus
+            )
+
             val applicationStatusHistory = arrayListOf(applicationStatusHistoryElement)
 
-            val resultApplication = ApplicationEntity()
-
-            resultApplication.id = applicationId
-            resultApplication.client = resultClient
-            resultApplication.status = applicationStatus
-            resultApplication.statusHistory = applicationStatusHistory
-            resultApplication.creationDate = LocalDate.now().minusDays(2)
-
-            return resultApplication
+            return ApplicationEntity(
+                id = applicationId,
+                client = resultClient,
+                status = applicationStatus,
+                statusHistory = applicationStatusHistory,
+                creationDate = LocalDate.now().minusDays(2)
+            )
         }
 
         fun optionalUnfilledApplicationEntity(): Optional<ApplicationEntity> {
@@ -69,11 +70,12 @@ class ApplyOfferServiceTestData {
             val application = unfilledApplicationEntity()
 
             // update application status to approved
-            val applicationStatus = ApplicationEntity.Status.APPROVED
+            val applicationStatus = ApplicationStatusEnum.APPROVED
 
-            val applicationStatusHistoryElement = ApplicationHistoryElementRecord()
-            applicationStatusHistoryElement.date = LocalDate.now()
-            applicationStatusHistoryElement.status = applicationStatus
+            val applicationStatusHistoryElement = ApplicationHistoryElementRecord(
+                date = LocalDate.now(),
+                status = applicationStatus
+            )
 
             application.status = applicationStatus
             application.statusHistory.add(applicationStatusHistoryElement)

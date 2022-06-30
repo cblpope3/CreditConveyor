@@ -5,15 +5,18 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import ru.leonov.deal.dto.LoanApplicationRequestDTO
 import ru.leonov.deal.dto.LoanOfferDTO
-import ru.leonov.deal.mappers.LoanRequestMapper
+import ru.leonov.deal.mapper.loanRequestToClient
 import ru.leonov.deal.model.entity.ApplicationEntity
 import ru.leonov.deal.model.entity.ClientEntity
+import ru.leonov.deal.model.enums.ApplicationStatusEnum
 import ru.leonov.deal.model.record.ApplicationHistoryElementRecord
 import java.time.LocalDate
 
 class LoanOfferServiceTestData {
 
     companion object {
+
+//        private const val loanRequestMapper = LoanRequestMapper
 
         private const val clientId: Long = 112
         private const val applicationId: Long = 221
@@ -40,7 +43,7 @@ class LoanOfferServiceTestData {
         }
 
         fun fineClientEntityNoId(): ClientEntity {
-            return LoanRequestMapper.INSTANCE.loanRequestToClient(fineRequestObject())
+            return loanRequestToClient(fineRequestObject())
         }
 
         fun fineClientEntityWithId(): ClientEntity {
@@ -50,22 +53,22 @@ class LoanOfferServiceTestData {
         }
 
         fun fineApplicationEntityNoId(): ApplicationEntity {
-            val applicationStatus = ApplicationEntity.Status.PREAPPROVAL
+            val applicationStatus = ApplicationStatusEnum.PREAPPROVAL
             val resultClient = fineClientEntityWithId()
 
-            val applicationStatusHistoryElement = ApplicationHistoryElementRecord()
-            applicationStatusHistoryElement.date = LocalDate.now()
-            applicationStatusHistoryElement.status = applicationStatus
-            val applicationStatusHistory = listOf(applicationStatusHistoryElement)
+            val applicationStatusHistoryElement = ApplicationHistoryElementRecord(
+                date = LocalDate.now(),
+                status = applicationStatus
+            )
 
-            val resultApplication = ApplicationEntity()
+            val applicationStatusHistory = ArrayList(listOf(applicationStatusHistoryElement))
 
-            resultApplication.client = resultClient
-            resultApplication.status = applicationStatus
-            resultApplication.statusHistory = applicationStatusHistory
-            resultApplication.creationDate = LocalDate.now()
-
-            return resultApplication
+            return ApplicationEntity(
+                client = resultClient,
+                status = applicationStatus,
+                statusHistory = applicationStatusHistory,
+                creationDate = LocalDate.now()
+            )
         }
 
         fun fineApplicationEntityWithId(): ApplicationEntity {
@@ -119,7 +122,7 @@ class LoanOfferServiceTestData {
                 ]"""
         }
 
-        fun unorderedResponseWithWrongIdObject(): List<LoanOfferDTO> {
+        fun unorderedResponseWithWrongIdObject(): MutableList<LoanOfferDTO> {
             val mapper = jacksonObjectMapper()
             val resultList: ArrayList<LoanOfferDTO> = mapper.readValue(orderedResponseWithWrongIdJSON())
             resultList.add(resultList[0])

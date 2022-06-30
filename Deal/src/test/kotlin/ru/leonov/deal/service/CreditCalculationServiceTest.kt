@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.util.AssertionErrors.assertEquals
 import ru.leonov.deal.client.ConveyorAppClient
-import ru.leonov.deal.exceptions.ApplicationException
+import ru.leonov.deal.exception.ApplicationException
 import ru.leonov.deal.repository.ApplicationRepository
 import ru.leonov.deal.repository.ClientRepository
 import ru.leonov.deal.repository.CreditRepository
@@ -72,7 +72,8 @@ class CreditCalculationServiceTest {
         // performing ApplyOfferService request
         creditCalculationService.calculateCredit(
             finishRegistrationRequestObject(),
-            applicationEntityStoredInDBBefore().id
+            //fixme deal with nullable values
+            applicationEntityStoredInDBBefore().id!!
         )
 
 
@@ -97,7 +98,8 @@ class CreditCalculationServiceTest {
         val thrownException = assertThrows<ApplicationException> {
             creditCalculationService.calculateCredit(
                 finishRegistrationRequestObject(),
-                applicationEntityStoredInDBBefore().id
+                //fixme deal with nullable values
+                applicationEntityStoredInDBBefore().id!!
             )
         }
 
@@ -155,7 +157,8 @@ class CreditCalculationServiceTest {
         // performing ApplyOfferService request
         creditCalculationService.calculateCredit(
             finishRegistrationRequestObject(),
-            applicationEntityStoredInDBBefore().id
+            //fixme deal with nullable values
+            applicationEntityStoredInDBBefore().id!!
         )
 
 

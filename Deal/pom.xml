@@ -43,7 +43,6 @@
 			<artifactId>spring-boot-starter-validation</artifactId>
 		</dependency>
 
-
 <!--		Test-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -57,6 +56,7 @@
 			<version>3.0.1</version>
 			<scope>test</scope>
 		</dependency>
+<!--		TODO add H2 database for tests-->
 
 <!--		Kotlin-->
 		<dependency>
@@ -95,14 +95,6 @@
 			<artifactId>jackson-module-kotlin</artifactId>
 		</dependency>
 
-<!--		TODO remove this when project is rewritten in kotlin-->
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<version>${lombok.version}</version>
-			<scope>provided</scope>
-		</dependency>
-
 <!--		Openapi generator-->
 		<dependency>
 			<groupId>io.springfox</groupId>
@@ -125,13 +117,6 @@
 			<version>6.0.13.Final</version>
 		</dependency>
 
-<!--		Mapstruct-->
-		<dependency>
-			<groupId>org.mapstruct</groupId>
-			<artifactId>mapstruct</artifactId>
-			<version>${mapstruct.version}</version>
-		</dependency>
-
 <!--		Logger-->
 		<dependency>
 			<groupId>io.github.microutils</groupId>
@@ -146,7 +131,7 @@
 	</dependencies>
 
 	<build>
-		<sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
+<!--		<sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>-->
 		<testSourceDirectory>${project.basedir}/src/test/kotlin</testSourceDirectory>
 		<plugins>
 			<plugin>
@@ -167,7 +152,6 @@
 						</goals>
 						<configuration>
 							<sourceDirs>
-								<sourceDir>${project.basedir}/src/main/java</sourceDir>
 								<sourceDir>${project.basedir}/src/main/kotlin</sourceDir>
 							</sourceDirs>
 							<jvmTarget>${java.version}</jvmTarget>
@@ -183,7 +167,6 @@
 						</goals>
 						<configuration>
 							<sourceDirs>
-								<sourceDir>${project.basedir}/src/test/java</sourceDir>
 								<sourceDir>${project.basedir}/src/test/kotlin</sourceDir>
 							</sourceDirs>
 							<jvmTarget>${java.version}</jvmTarget>
@@ -196,6 +179,7 @@
 					</args>
 					<compilerPlugins>
 						<plugin>spring</plugin>
+						<plugin>jpa</plugin>
 					</compilerPlugins>
 				</configuration>
 				<dependencies>
@@ -204,42 +188,14 @@
 						<artifactId>kotlin-maven-allopen</artifactId>
 						<version>${kotlin.version}</version>
 					</dependency>
+					<dependency>
+						<groupId>org.jetbrains.kotlin</groupId>
+						<artifactId>kotlin-maven-noarg</artifactId>
+						<version>${kotlin.version}</version>
+					</dependency>
 				</dependencies>
 			</plugin>
 
-
-			<!--		TODO remove this when project is rewritten in kotlin-->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.5.1</version>
-				<configuration>
-					<source>${java.version}</source>
-					<target>${java.version}</target>
-					<annotationProcessorPaths>
-						<path>
-							<groupId>org.mapstruct</groupId>
-							<artifactId>mapstruct-processor</artifactId>
-							<version>${mapstruct.version}</version>
-						</path>
-						<path>
-							<groupId>org.projectlombok</groupId>
-							<artifactId>lombok</artifactId>
-							<version>${lombok.version}</version>
-						</path>
-						<path>
-							<groupId>org.projectlombok</groupId>
-							<artifactId>lombok-mapstruct-binding</artifactId>
-							<version>0.2.0</version>
-						</path>
-					</annotationProcessorPaths>
-					<compilerArgs>
-						<compilerArg>
-							-Amapstruct.defaultComponentModel=spring
-						</compilerArg>
-					</compilerArgs>
-				</configuration>
-			</plugin>
 			<plugin>
 				<groupId>org.openapitools</groupId>
 				<artifactId>openapi-generator-maven-plugin</artifactId>
@@ -268,6 +224,7 @@
 								<modelMutable>true</modelMutable>
 								<enumPropertyNaming>UPPERCASE</enumPropertyNaming>
 								<typeMappings>
+<!--									TODO deal with datetime examples in swagger-->
 									<typeMapping>date=java.time.LocalDate</typeMapping>
 								</typeMappings>
 							</configOptions>

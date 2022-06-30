@@ -11,7 +11,7 @@ import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import ru.leonov.deal.exceptions.ApplicationException
+import ru.leonov.deal.exception.ApplicationException
 import ru.leonov.deal.service.ApplyOfferService
 import ru.leonov.deal.service.CreditCalculationService
 import ru.leonov.deal.service.GetOffersService

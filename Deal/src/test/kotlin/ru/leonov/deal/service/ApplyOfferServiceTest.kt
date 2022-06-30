@@ -8,7 +8,7 @@ import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.util.AssertionErrors.assertEquals
-import ru.leonov.deal.exceptions.ApplicationException
+import ru.leonov.deal.exception.ApplicationException
 import ru.leonov.deal.repository.ApplicationRepository
 import ru.leonov.deal.test_data.ApplyOfferServiceTestData.Companion.emptyApplicationResult
 import ru.leonov.deal.test_data.ApplyOfferServiceTestData.Companion.filledApplicationEntity

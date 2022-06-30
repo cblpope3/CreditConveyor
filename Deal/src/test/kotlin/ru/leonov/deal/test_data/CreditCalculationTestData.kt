@@ -9,8 +9,8 @@ import ru.leonov.deal.dto.ScoringDataDTO
 import ru.leonov.deal.model.entity.ApplicationEntity
 import ru.leonov.deal.model.entity.ClientEntity
 import ru.leonov.deal.model.entity.CreditEntity
-import ru.leonov.deal.model.record.ApplicationHistoryElementRecord
-import ru.leonov.deal.model.record.EmploymentRecord
+import ru.leonov.deal.model.enums.*
+import ru.leonov.deal.model.record.*
 import java.time.LocalDate
 import java.util.*
 
@@ -28,6 +28,22 @@ class CreditCalculationTestData {
                      "id": 31,
                      "status": "APPROVED",
                      "creationDate": "2022-06-03",
+                     "client":
+                         {
+                            "id": 74,
+                            "lastName": "Pupkin",
+                            "firstName": "Vasiliy",
+                            "middleName": "Ulukbekovich",
+                            "birthDate": "1998-04-28",
+                            "email": "vasyapoop@ulukbek.ru",
+                            "passport": 
+                                {
+                                    "number": 567321, 
+                                    "series": 2467, 
+                                    "issueDate": null, 
+                                    "issueBranch": null
+                                }                         
+                        },
                      "appliedOffer": 
                          {
                              "rate": 11.0, 
@@ -92,25 +108,26 @@ class CreditCalculationTestData {
         fun completedClientEntity(): ClientEntity {
             val clientEntity = applicationEntityStoredInDBBefore().client
 
-            val passportRecord = clientEntity.passport
-            passportRecord.issueDate = finishRegistrationRequestObject().passportIssueDate
-            passportRecord.issueBranch = finishRegistrationRequestObject().passportIssueBranch
+            val passportRecord = PassportRecord(
+                series = clientEntity.passport.series,
+                number = clientEntity.passport.number,
+                issueDate = finishRegistrationRequestObject().passportIssueDate,
+                issueBranch = finishRegistrationRequestObject().passportIssueBranch
+            )
 
             val employmentDTO = finishRegistrationRequestObject().employment
-            val employmentRecord = EmploymentRecord()
-            employmentRecord.employmentStatus = EmploymentRecord.EmploymentStatus.valueOf(
-                employmentDTO.employmentStatus.value
+            val employmentRecord = EmploymentRecord(
+                employmentStatus = EmploymentStatusEnum.valueOf(employmentDTO.employmentStatus.value),
+                employer = employmentDTO.employerINN,
+                salary = employmentDTO.salary,
+                position = EmploymentPositionEnum.valueOf(employmentDTO.position.value),
+                workExperienceTotal = employmentDTO.workExperienceTotal,
+                workExperienceCurrent = employmentDTO.workExperienceCurrent
             )
-            employmentRecord.employer = employmentDTO.employerINN
-            employmentRecord.salary = employmentDTO.salary
-            employmentRecord.position = EmploymentRecord.Position.valueOf(employmentDTO.position.value)
-            employmentRecord.workExperienceTotal = employmentDTO.workExperienceTotal
-            employmentRecord.workExperienceCurrent = employmentDTO.workExperienceCurrent
 
-
-            clientEntity.gender = ClientEntity.Gender.valueOf(finishRegistrationRequestObject().gender.value)
+            clientEntity.gender = ClientGenderEnum.valueOf(finishRegistrationRequestObject().gender.value)
             clientEntity.maritalStatus =
-                ClientEntity.MartialStatus.valueOf(finishRegistrationRequestObject().maritalStatus.value)
+                ClientMartialStatusEnum.valueOf(finishRegistrationRequestObject().maritalStatus.value)
             clientEntity.dependentAmount = finishRegistrationRequestObject().dependentAmount
             clientEntity.account = finishRegistrationRequestObject().account.toLong()
 
@@ -141,13 +158,13 @@ class CreditCalculationTestData {
 
         fun applicationOptionalStoredInDBBeforeWithCCDeniedStatus(): Optional<ApplicationEntity> {
             val application = applicationEntityStoredInDBBefore()
-            application.status = ApplicationEntity.Status.CC_DENIED
+            application.status = ApplicationStatusEnum.CC_DENIED
             return Optional.of(application)
         }
 
         fun applicationOptionalStoredInDBBeforeWithClientDeniedStatus(): Optional<ApplicationEntity> {
             val application = applicationEntityStoredInDBBefore()
-            application.status = ApplicationEntity.Status.CLIENT_DENIED
+            application.status = ApplicationStatusEnum.CLIENT_DENIED
             return Optional.of(application)
         }
 
@@ -156,11 +173,12 @@ class CreditCalculationTestData {
             application.client = completedClientEntity()
             application.credit = creditEntityExpectedToSaveInDBWithIdObject()
 
-            val newApplicationStatus = ApplicationEntity.Status.CC_APPROVED
+            val newApplicationStatus = ApplicationStatusEnum.CC_APPROVED
 
-            val applicationStatusHistoryElement = ApplicationHistoryElementRecord()
-            applicationStatusHistoryElement.date = LocalDate.now()
-            applicationStatusHistoryElement.status = newApplicationStatus
+            val applicationStatusHistoryElement = ApplicationHistoryElementRecord(
+                date = LocalDate.now(),
+                status = newApplicationStatus
+            )
 
             application.status = newApplicationStatus
             application.statusHistory.add(applicationStatusHistoryElement)
@@ -172,11 +190,12 @@ class CreditCalculationTestData {
             val application = applicationEntityStoredInDBBefore()
             application.client = completedClientEntity()
 
-            val newApplicationStatus = ApplicationEntity.Status.CC_DENIED
+            val newApplicationStatus = ApplicationStatusEnum.CC_DENIED
 
-            val applicationStatusHistoryElement = ApplicationHistoryElementRecord()
-            applicationStatusHistoryElement.date = LocalDate.now()
-            applicationStatusHistoryElement.status = newApplicationStatus
+            val applicationStatusHistoryElement = ApplicationHistoryElementRecord(
+                date = LocalDate.now(),
+                status = newApplicationStatus
+            )
 
             application.status = newApplicationStatus
             application.statusHistory.add(applicationStatusHistoryElement)

@@ -1,6 +1,5 @@
 package ru.leonov.deal.controller
 
-import lombok.extern.slf4j.Slf4j
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
@@ -13,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController
 import ru.leonov.deal.dto.FinishRegistrationRequestDTO
 import ru.leonov.deal.dto.LoanApplicationRequestDTO
 import ru.leonov.deal.dto.LoanOfferDTO
-import ru.leonov.deal.exceptions.ApplicationException
+import ru.leonov.deal.exception.ApplicationException
 import ru.leonov.deal.service.ApplyOfferService
 import ru.leonov.deal.service.CreditCalculationService
 import ru.leonov.deal.service.GetOffersService
@@ -23,7 +22,6 @@ import java.util.stream.Collectors
 /**
  * Controller that handle '/deal' rest requests.
  */
-@Slf4j
 @RestController
 class DealController(
     @Autowired val getOffersService: GetOffersService,
