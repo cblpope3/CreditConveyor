@@ -11,9 +11,8 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This service handle credit math calculations.
@@ -358,7 +357,8 @@ public class CreditCalculationService {
                 .setScale(2, RoundingMode.HALF_UP);
 
         log.trace("Calculated monthly payment is {} roubles.", monthlyPayment);
-
+        int a=2,b=1,c=3;
+        Arrays.asList(a,b,c).stream().sorted().collect(Collectors.toList());
         return monthlyPayment;
     }
 }

@@ -49,7 +49,7 @@ class CreditCalculationServiceTest {
     @Test
     fun creditCalculationServiceTest() {
         // mocking application repository findById call
-        every { applicationRepository.findById(applicationEntityStoredInDBBefore().id) } returns
+        every { applicationRepository.findById(applicationEntityStoredInDBBefore().id!!) } returns
                 applicationOptionalStoredInDBBefore()
 
         // mocking client repository save call
@@ -90,7 +90,7 @@ class CreditCalculationServiceTest {
     @Test
     fun creditCalculationIfApplicationNotFoundTest() {
         // mocking application repository findById call
-        every { applicationRepository.findById(applicationEntityStoredInDBBefore().id) } returns
+        every { applicationRepository.findById(applicationEntityStoredInDBBefore().id!!) } returns
                 Optional.empty()
 
         // performing ApplyOfferService request and comparing thrown exception to expected
@@ -138,7 +138,7 @@ class CreditCalculationServiceTest {
     @Test
     fun creditCalculationIfApplicationIsDeniedByConveyorTest() {
         // mocking application repository findById call
-        every { applicationRepository.findById(applicationEntityStoredInDBBefore().id) } returns
+        every { applicationRepository.findById(applicationEntityStoredInDBBefore().id!!) } returns
                 applicationOptionalStoredInDBBefore()
 
         // mocking client repository save call
