@@ -6,6 +6,7 @@ import io.mockk.verify
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.util.AssertionErrors.assertEquals
 import ru.leonov.deal.client.ConveyorAppClient
 import ru.leonov.deal.repository.ApplicationRepository
@@ -19,6 +20,7 @@ import ru.leonov.deal.test_data.LoanOfferServiceTestData.Companion.orderedRespon
 import ru.leonov.deal.test_data.LoanOfferServiceTestData.Companion.unorderedResponseWithWrongIdObject
 
 @SpringBootTest
+@ActiveProfiles("test")
 class GetOffersServiceTest {
 
     @MockkBean

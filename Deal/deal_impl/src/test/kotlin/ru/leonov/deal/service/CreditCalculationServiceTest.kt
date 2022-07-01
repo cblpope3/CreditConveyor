@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.util.AssertionErrors.assertEquals
 import ru.leonov.deal.client.ConveyorAppClient
 import ru.leonov.deal.exception.ApplicationException
@@ -28,6 +29,7 @@ import ru.leonov.deal.test_data.CreditCalculationTestData.Companion.scoringDataR
 import java.util.*
 
 @SpringBootTest
+@ActiveProfiles("test")
 class CreditCalculationServiceTest {
 
     @MockkBean
