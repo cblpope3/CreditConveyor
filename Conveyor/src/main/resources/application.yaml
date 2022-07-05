@@ -1,0 +1,40 @@
+server:
+  port: 8080
+
+app-params:
+  baseRate: 15
+  scoring:
+    # Общий стаж менее 12 месяцев → отказ
+    minTotalExperience: 12
+    # Текущий стаж менее 3 месяцев → отказ
+    minCurrentExperience: 3
+    # Возраст менее 20 или более 60 лет → отказ
+    minLoanAge: 20
+    maxLoanAge: 60
+    # Мужчина, возраст от 30 до 55 лет → ставка уменьшается на 3
+    malePreferredAgeMin: 30
+    malePreferredAgeMax: 55
+    malePreferredAgeCorrection: -3
+    # Женщина, возраст от 35 до 60 лет → ставка уменьшается на 3
+    femalePreferredAgeMin: 35
+    femalePreferredAgeMax: 60
+    femalePreferredAgeCorrection: -3
+    # Количество иждивенцев больше 1 → ставка увеличивается на 1
+    preferredDependentAmountMax: 1
+    dependentAmountCorrection: 1
+    # Сумма займа больше, чем 20 зарплат → отказ
+    salaryToLoanRateLimit: 20
+    # Самозанятый → ставка увеличивается на 1
+    selfEmployedCorrection: 1
+    # Владелец бизнеса → ставка увеличивается на 3
+    businessOwnerCorrection: 3
+    # Менеджер среднего звена → ставка уменьшается на 2
+    midManagerCorrection: -2
+    # Топ-менеджер → ставка уменьшается на 4
+    topManagerCorrection: -4
+    # Замужем/женат → ставка уменьшается на 3
+    marriedCorrection: -3
+    # Разведен → ставка увеличивается на 1
+    divorcedCorrection: 1
+    # Небинарный → ставка увеличивается на 3
+    nonBinaryCorrection: 3

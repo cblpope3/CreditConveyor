@@ -1,0 +1,16 @@
+server:
+  port: 8081
+
+conveyor-app:
+  hostname: http://${CONVEYOR_APP_HOST:localhost}:8080/
+
+spring:
+  datasource:
+    url: jdbc:postgresql://${DATABASE_HOST:localhost}:5432/nickolay
+    username: nickolay
+    password: nickolay
+    driver-class-name: org.postgresql.Driver
+    hibernate:
+      ddl-auto: none
+    liquibase:
+      change-log: classpath:/db/changelog/db.changelog-master.yaml
